@@ -98,12 +98,11 @@ window.STRINGS = {
       color: "색상", type: "글자", header: "머리 영역", summary: "쉬운 요약", passage: "본문", journal: "기록 카드", calendar: "달력", buttons: "버튼", controls: "컨트롤", rulesTitle: "규칙",
       tDisplay: "34 굵게. 오늘 읽을 곳, 기록, 첫 화면 제목. 노트북에서 44",
       tReading: "17 보통, 줄 간격 1.75. 성경 본문",
-      tTitle: "17 굵게. 카드 제목, 버튼, 달",
+      tTitle: "15 굵게. 섹션 제목, 카드 제목, 버튼, 달. 본문과 크기는 같고 굵기만 달라요",
       tBody: "15 보통. 요약, 핵심 구절, 핵심 메시지",
-      tLabel: "13 굵게. 섹션 이름, 칩, 번호, 탭",
-      tSmall: "13 보통. 날짜, 안내, 설명",
+            tSmall: "13 보통. 날짜, 구절 이름, 안내, 칩, 탭",
       cDays: "읽은 날, 오늘, 고른 날, 아직 안 온 날",
-      rules: ["글자는 네 가지 크기와 두 가지 굵기만 써요. Stay Counter, Shuo와 같아요.", "초록 채움은 primary, 초록 글자는 green-text만 써요.", "모든 꺾쇠는 16 크기에 chevron 색이에요. 오른쪽은 다른 화면으로, 아래쪽은 그 자리에서 펼쳐요.", "카드는 흰 바탕에 1px 선과 16 둥글기. 그림자는 쓰지 않아요.", "요약은 펼쳐 두고, 본문은 필요할 때 펼쳐요.", "구절은 기기에 있는 성경에서 가져와요. AI는 어느 구절인지만 알려 줘요."]
+      rules: ["글자 스타일은 네 가지예요. 34 굵게, 15 굵게, 15 보통, 13 보통. 성경 본문만 17이에요. Stay Counter, Shuo와 같아요.", "초록 채움은 primary, 초록 글자는 green-text만 써요.", "모든 꺾쇠는 16 크기에 chevron 색이에요. 오른쪽은 다른 화면으로, 아래쪽은 그 자리에서 펼쳐요.", "카드는 흰 바탕에 1px 선과 16 둥글기. 그림자는 쓰지 않아요.", "요약은 펼쳐 두고, 본문은 필요할 때 펼쳐요.", "구절은 기기에 있는 성경에서 가져와요. AI는 어느 구절인지만 알려 줘요."]
     },
     source: "개역한글판(1961)과 World English Bible은 모두 퍼블릭 도메인이에요.",
     pickTitle: "마지막으로 읽은 곳",
@@ -221,12 +220,11 @@ window.STRINGS = {
       color: "Color", type: "Type", header: "Header", summary: "Summary", passage: "Passage", journal: "Journal card", calendar: "Calendar", buttons: "Buttons", controls: "Controls", rulesTitle: "Rules",
       tDisplay: "34 semibold. Today's reading, Journal, first open headline. 44 on laptops",
       tReading: "17 regular, line 1.75. Bible verses",
-      tTitle: "17 semibold. Card titles, buttons, the month",
+      tTitle: "15 semibold. Section headers, card titles, buttons, the month. Same size as body, set apart by weight",
       tBody: "15 regular. Summary, key verse, key message",
-      tLabel: "13 semibold. Section labels, chips, badges, tabs",
-      tSmall: "13 regular. Dates, notes, captions",
+            tSmall: "13 regular. Dates, verse labels, notes, chips, tabs",
       cDays: "Read, today, selected and future days",
-      rules: ["Four sizes and two weights, the same as Stay Counter and Shuo.", "Green fills use primary. Green text always uses green-text.", "Every chevron is 16 in the chevron colour. Right opens another page, down opens in place.", "Cards are white with a 1px line and 16 corners. No shadows.", "The summary stays open. The passage opens when you want it.", "Verses come from the Bible on the device. The AI only says which verse."]
+      rules: ["Four text styles. 34 semibold, 15 semibold, 15 regular, 13 regular. Only Bible verses use 17. The same as Stay Counter and Shuo.", "Green fills use primary. Green text always uses green-text.", "Every chevron is 16 in the chevron colour. Right opens another page, down opens in place.", "Cards are white with a 1px line and 16 corners. No shadows.", "The summary stays open. The passage opens when you want it.", "Verses come from the Bible on the device. The AI only says which verse."]
     },
     source: "개역한글 (1961) and the World English Bible are both in the public domain.",
     pickTitle: "Last chapter read",

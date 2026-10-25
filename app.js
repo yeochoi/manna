@@ -765,9 +765,8 @@
     h += '<div class="section">' + esc(d.type) + '</div><div class="card">' +
       '<div class="tr"><div class="page-title">' + esc(sample.range) + "</div><small>" + esc(d.tDisplay) + "</small></div>" +
       '<div class="tr"><div class="verse" style="margin:0;font-size:17px">' + esc(sample.v) + "</div><small>" + esc(d.tReading) + "</small></div>" +
-      '<div class="tr"><div class="j-title">' + esc(sample.pass) + "</div><small>" + esc(d.tTitle) + "</small></div>" +
+      '<div class="tr"><div class="j-title">' + esc(sample.sum) + "</div><small>" + esc(d.tTitle) + "</small></div>" +
       '<div class="tr"><div class="message-text">' + esc(sample.p1) + "</div><small>" + esc(d.tBody) + "</small></div>" +
-      '<div class="tr"><div class="verse-label">' + esc(sample.sum) + "</div><small>" + esc(d.tLabel) + "</small></div>" +
       '<div class="tr"><div class="note">' + esc(sample.date) + "</div><small>" + esc(d.tSmall) + "</small></div></div>";
 
     h += '<div class="section">' + esc(d.header) + '</div><div class="card ds-demo"><div class="top-row" style="margin-bottom:14px"><span class="streak">' + icons.flame + esc(sample.streak) + '</span><span class="round" aria-hidden="true">' + icons.gear + "</span></div>" +

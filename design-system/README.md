@@ -35,27 +35,26 @@ Rules
 
 ## Typography
 
-Outfit for Latin letters and numbers, Noto Sans KR for Korean, both from Google Fonts. Four sizes and two weights, the same scale as Stay Counter and Shuo.
+Outfit for Latin letters and numbers, Noto Sans KR for Korean, both from Google Fonts. Four text styles in three sizes, the same as Stay Counter and Shuo, plus one size for Bible verses.
 
 | Style | Size | Weight | For |
 | --- | --- | --- | --- |
 | `display` | 34, 44 on laptop | Semibold | Today's reading, Journal, the first open headline, stats |
-| `reading` | 17, line 1.75 | Regular | Verses in the passage |
-| `title` | 17 | Semibold | Card titles, buttons, sheet titles, the month |
-| `body` | 15 | Regular | Summary points, key verse, key message, journal messages |
-| `label` | 13 | Semibold | Section labels, chips, badges, verse numbers, tab labels |
-| `small` | 13 | Regular | The line above the title, dates, captions, notes |
+| `title` | 15 | Semibold | Section headers, card titles, buttons, the month, summary numbers |
+| `body` | 15 | Regular | Summary points, key verse, key message, journal messages, rows |
+| `small` | 13 | Regular | Dates, verse labels, verse numbers, chips, tab labels, notes |
+| `reading` | 17, line 1.75 | Regular | Verses in the passage only |
 
 Rules
-- Only 400 and 600.
-- Text inputs use 16 so iOS does not zoom. That is the only other size.
+- Only 400 and 600. A header differs from text by weight only, never by size.
+- Text inputs use 16 so iOS does not zoom.
 - Large text uses minus 0.02em letter spacing. Korean keeps whole words together on a line break.
 
 ## Layout
 
 - Phones use a 22 side margin. Laptops center content inside `max-width` 1040, with backgrounds running full width.
 - Today and a past day use two columns on laptops. The summary stays beside the passage while you read.
-- Sections start with a `label` 24 above, 8 above the card. Cards are white with a 1px `line` border and `radius-card`. No shadows.
+- Sections start with a `title` header in ink, 24 above and 8 above the card. Cards are white with a 1px `line` border and `radius-card`. No shadows.
 - Every chevron is 16 in `chevron`. Right on a card that opens a page, down on a card that opens in place.
 
 ## Navigation
