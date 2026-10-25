@@ -354,3 +354,17 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
   .disc-head:hover { background: #FBFAF8; }
 }
 .card.pad + .disc, .note-box + .disc { margin-top: 12px; }
+
+/* Design system page, opened from Settings */
+.sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+.sw div { border-radius: var(--radius-note); border: 1px solid var(--line); overflow: hidden; font-size: 13px; background: var(--surface); }
+.sw div span { display: block; height: 48px; border-bottom: 1px solid var(--line); }
+.sw div p { margin: 0; padding: 6px 8px; line-height: 18px; }
+.sw div p i { font-style: normal; color: var(--muted); }
+.ds .tr { padding: 14px 16px; border-top: 1px solid var(--line); }
+.ds .tr:first-child { border-top: 0; }
+.ds .tr small { display: block; font-size: 13px; line-height: 19px; color: var(--muted); padding-top: 6px; }
+.ds .ds-rule { font-size: 15px; line-height: 22px; }
+.ds-demo { padding: 20px 16px 24px; }
+.ds-demo .round { width: 44px; height: 44px; }
+.ds-btn { display: flex; align-items: center; justify-content: center; }

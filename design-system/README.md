@@ -63,6 +63,7 @@ Rules
 - Two tabs, Today and Journal. Phones have a bottom bar, laptops a top bar with Manna on the left.
 - Tapping the current tab scrolls to the top.
 - Settings sits behind the round gear on Today.
+- Settings ends with About, where Design system opens this system inside the app, built from the app's own styles.
 - The passage opens in place inside its card. A long passage shows a slim bar at the top with the range and progress while you read.
 
 ## Iconography
