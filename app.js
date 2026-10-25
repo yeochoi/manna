@@ -332,21 +332,37 @@
     return '<span class="streak' + (n ? "" : " off") + '">' + icons.flame + esc(n ? t("streakDays", { n: n }) : t("streakStart")) + "</span>";
   }
 
+  var logo = '<svg width="64" height="64" viewBox="0 0 100 100" role="img" aria-label="Manna"><rect width="100" height="100" rx="22" fill="#2F6B4F"/><path d="M17 30 Q33 23 47.5 31 V78 Q33 70 17 76 Z" fill="#FFFFFF"/><path d="M52.5 31 Q67 23 83 30 V76 Q67 70 52.5 78 Z" fill="#FFFFFF"/></svg>';
+  var featureIcons = [
+    '<path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"/>',
+    '<path d="M12 2l2.4 6.2L21 9l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.6 3 9l6.6-.8z"/>',
+    '<path d="M5 5h14a2 2 0 0 1 2 2v1.5H3V7a2 2 0 0 1 2-2z"/><path d="M3 10.5h18V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><rect x="7" y="2" width="2" height="5" rx="1"/><rect x="15" y="2" width="2" height="5" rx="1"/>'
+  ];
+  // First open. Story at the top, actions at the bottom in thumb reach.
+  function renderWelcome() {
+    teardownReadingBar();
+    tabs.className = "tabs hide-all";
+    view.className = "screen welcome-screen";
+    var feats = ["welcomeF1", "welcomeF2", "welcomeF3"].map(function (k, i) {
+      return '<li><span class="w-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="#2F6B4F" aria-hidden="true">' + featureIcons[i] + "</svg></span><span>" + esc(t(k)) + "</span></li>";
+    }).join("");
+    view.innerHTML = '<div class="welcome"><div class="w-intro">' + logo +
+      '<h1 class="w-title">' + esc(t("welcomeTitle")) + '</h1><ul class="w-feats">' + feats + "</ul></div>" +
+      '<div class="w-gap"></div>' +
+      '<div class="w-form"><span class="w-card-title">' + esc(t("welcomeCard")) + '</span><p class="w-card-body">' + esc(t("welcomeBody")) + "</p>" +
+      '<a class="btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/pick">' + esc(t("pickPlace")) + "</a>" +
+      '<button class="btn secondary" type="button" id="startGen">' + esc(t("startGenesis")) + "</button>" +
+      '<a class="w-note" href="#/settings">' + esc(t("welcomeNote")) + "</a></div></div>";
+    document.getElementById("startGen").onclick = function () { db.bookmark = { b: 1, c: 0 }; save(); render(); };
+  }
+
   function renderToday() {
     renderTabs("today");
     var today = todayKey();
     var head = '<header class="top"><div class="top-row">' + streakChip() +
       '<a class="round" href="#/settings" aria-label="' + esc(t("settings")) + '">' + icons.gear + "</a></div>";
 
-    if (!db.bookmark) {
-      teardownReadingBar();
-      view.innerHTML = head + '<span class="top-label">' + esc(t("today") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(t("welcomeTitle")) + "</h1></header>" +
-        '<div class="content"><p class="note" style="margin:20px 0 16px;font-size:15px;line-height:22px">' + esc(t("welcomeBody")) + "</p>" +
-        '<div class="done-area welcome-actions" style="margin-top:0"><button class="btn" type="button" id="startGen">' + esc(t("startGenesis")) + "</button>" +
-        '<a class="btn secondary" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/pick">' + esc(t("pickPlace")) + "</a></div></div>";
-      document.getElementById("startGen").onclick = function () { db.bookmark = { b: 1, c: 0 }; save(); render(); };
-      return;
-    }
+    if (!db.bookmark) { renderWelcome(); return; }
 
     var entries = db.log[today] || [];
     var mode = db.settings.mode;
@@ -666,7 +682,7 @@
     teardownReadingBar();
     view.className = "screen no-tabs";
     var cur = db.bookmark && db.bookmark.c > 0 ? db.bookmark : null;
-    var html = '<div class="bar narrow"><a class="round small" href="#/settings" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(t("pickTitle")) + '</span><span></span></div><div class="content narrow">';
+    var html = '<div class="bar narrow"><a class="round small" href="' + (db.bookmark ? "#/settings" : "#/today") + '" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(t("pickTitle")) + '</span><span></span></div><div class="content narrow">';
     function grid(from, to) {
       var g = '<div class="book-grid">';
       for (var i = from; i <= to; i++) g += '<button type="button" data-book="' + i + '" aria-pressed="' + (ui.pickBook === i) + '">' + esc(bookName(i)) + "</button>";
