@@ -7,7 +7,7 @@ A little Bible every day. Manna picks up where you left off, gives you a few cha
 1. **One reading per day.** Today answers one question, what do I read today. The title is the range, like 1 Samuel 24–26. Everything else sits below it.
 2. **Summary first, passage on request.** The easy summary is open. The full passage waits in a card you open, so the screen never starts as a wall of text.
 3. **Green means done and go.** Green is for actions, finished days and progress. Coral only appears when something failed.
-4. **Calm, warm, quiet.** Warm white ground, sage for selection, one green. Few boxes. Glass only on controls that float over content.
+4. **Calm, warm, quiet.** Warm white ground, sage for selection, one green. Few boxes. Layers follow iOS. Glass with a shadow only on things that float over content, everything on the page is flat.
 5. **Same family as Stay Counter and Shuo.** The same type scale, chevron and layout rules, with its own colour.
 
 ## Content
@@ -41,15 +41,15 @@ Outfit for Latin letters and numbers, Noto Sans KR for Korean, both from Google 
 | --- | --- | --- | --- |
 | `display` | 34, 44 on laptop | Semibold | Today's reading, Journal, the first open headline, stats |
 | `section` | 20 | Semibold | Section headers, like Summary, Passage and the Settings groups |
-| `title` | 15 | Semibold | Card titles, buttons, the month, summary numbers, chapter names |
-| `body` | 15 | Regular | Summary points, key verse, key message, journal messages, rows |
+| `title` | 17 | Semibold | Card titles, buttons, the month, summary numbers, chapter names |
+| `body` | 17 | Regular | Summary points, key verse, key message, journal messages, rows |
 | `small` | 13 | Regular | Dates, verse labels, verse numbers, chips, tab labels, notes |
 | `reading` | 17, line 1.75 | Regular | Verses in the passage only |
 
 Rules
 - Only 400 and 600. Section headers are 20 so the sections on a page stand out. Inside a section, a header differs from text by weight only.
 - Sections of the same level share one header style and one rhythm. 32 above a header, exactly 12 between the header and its content, measured from the text. Taller tap areas add their height above the text, never below. Summary includes the key verse and key message with no divider inside. A hairline only separates sections.
-- Text inputs use 16 so iOS does not zoom.
+- Text inputs use 17, so iOS does not zoom. Bible verses use the same 17 with more line space.
 - Large text uses minus 0.02em letter spacing. Korean keeps whole words together on a line break.
 
 ## Layout
@@ -58,7 +58,9 @@ Rules
 - Today and a past day use two columns on laptops. The summary stays beside the passage while you read.
 - Sections start with a `title` header in ink. Content sits right on the ground: no header band, no boxes around the summary, passage or calendar. Sections are split by a 1px `line` hairline. Settings keep white cards with a 1px `line` border and `radius-card`, because grouped controls need a container.
 - A floating control never covers a button. Floating controls hide or move when a button reaches them.
-- Glass is only for things that float over content: the tab bar, the reading bar, round buttons and back to top. Glass is white at 72 percent, blur 20, saturate 1.6, a soft shadow and a 1px inner highlight.
+- Layers follow iOS. Things that float over content are glass with a shadow. That is the tab bar, the reading bar and back to top. Glass is white at 72 percent, blur 20, saturate 1.6, a soft shadow and a 1px inner highlight.
+- Things on the page are flat. Every round button on the page, like the gear and close, is one grey circle. `chip`, 44 wide, a 20 icon with a 2 line in `ink`, no shadow, no line. The same in Shuo and Stay Counter.
+- Cards only for controls and tappable lists, like Settings. Reading content sits on the page.
 - On phones the tab bar is a floating glass pill, centered, 16 above the safe area. The current tab gets a `soft` sage pill at 90 percent with `green-text`. On laptops the tabs sit in a top bar on the ground with a light blur.
 - Every chevron is 16 in `chevron`. Right on a card that opens a page, down on a card that opens in place.
 
@@ -69,11 +71,11 @@ Rules
 - Settings sits behind the round gear on Today.
 - Settings ends with About, where Design system opens this system inside the app, built from the app's own styles.
 - The passage opens in place below its row. A long passage shows a floating glass bar at the top with the range and progress while you read.
-- Once you are a screen into an open passage, a round back to top button appears bottom right, above the tabs, near the thumb. It is glass with a `green-text` chevron, 48 wide. Tapping it scrolls to the top and moves focus to the page title. It hides whenever a main button is in the corner it floats over, like "I've read it" at the end of the passage, so it never covers an action.
+- Once you are a screen into an open passage, a round back to top button appears bottom right, above the tabs, near the thumb. It floats, so it is glass with a shadow, 44 wide with a 20 `ink` chevron. Tapping it scrolls to the top and moves focus to the page title. It hides whenever a main button is in the corner it floats over, like "I've read it" at the end of the passage, so it never covers an action.
 
 ## Iconography
 
-- Line icons, 1.8 stroke, round caps and joins, 24 grid. Chevrons use 2 stroke at 16.
+- Line icons, round caps and joins, 24 grid. Icons in round buttons are 20 with a 2 line. Chevrons use 2 stroke at 16.
 - The selected tab keeps the same line icon and changes colour only.
 - The mark is an open book in `primary` on `soft`, on a white rounded square.
 

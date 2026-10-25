@@ -634,7 +634,7 @@
 
     html += '<div class="section">' + esc(t("resetSection")) + '</div><div class="card">';
     if (!ui.resetOpen) {
-      html += '<button class="row-item" type="button" id="resetOpen"><span class="warn" style="font-size:15px">' + esc(t("resetApp")) + "</span>" + icons.chev + "</button>";
+      html += '<button class="row-item" type="button" id="resetOpen"><span class="warn" style="font-size:17px">' + esc(t("resetApp")) + "</span>" + icons.chev + "</button>";
     } else {
       html += '<div class="block"><span style="font-weight:600">' + esc(t("resetApp")) + "</span>" +
         '<p class="note" style="margin:0">' + esc(t("resetBody")) + "</p>" +
