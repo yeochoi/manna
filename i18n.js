@@ -121,7 +121,7 @@ window.STRINGS = {
     summaryLoading: "Writing the summary",
     noKey: "Add your Claude API key in Settings to get summaries here.",
     addKey: "Add API key",
-    copyPrompt: "Copy summary request",
+    copyPrompt: "Copy for Claude",
     copied: "Copied. Paste it into Claude.",
     summaryError: "Couldn't get a summary. {msg}",
     passage: "Passage · {tr}",

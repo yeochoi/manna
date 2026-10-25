@@ -276,12 +276,19 @@
 
   // Sticky bar with chapter progress while reading
   var scrollHandler = null;
+  // Phones show progress in a bar that slides in at the top.
+  // Laptops show the same progress at the top of the summary column.
+  function progressHTML(n) {
+    return '<div class="row"><span class="title js-title"></span><span class="note js-count"></span></div>' +
+      '<div class="progress" style="grid-template-columns:repeat(' + n + ',minmax(0,1fr))">' +
+      Array.apply(null, Array(n)).map(function () { return '<div><b style="width:0"></b></div>'; }).join("") + "</div>";
+  }
   function setupReadingBar(chs) {
     teardownReadingBar();
-    bar.innerHTML = '<div class="inner"><div class="row"><span class="title" id="barTitle"></span><span class="note" id="barCount"></span></div>' +
-      '<div class="progress" style="grid-template-columns:repeat(' + chs.length + ',minmax(0,1fr))">' +
-      chs.map(function () { return '<div><b style="width:0"></b></div>'; }).join("") + "</div></div>";
-    var fills = bar.querySelectorAll(".progress b");
+    bar.innerHTML = '<div class="inner">' + progressHTML(chs.length) + "</div>";
+    var side = document.getElementById("sideProgress");
+    if (side) side.innerHTML = progressHTML(chs.length);
+    var holders = [bar, side].filter(Boolean);
     var ticking = false;
     function update() {
       ticking = false;
@@ -296,10 +303,13 @@
         var r = el.getBoundingClientRect();
         if (r.top < vh * 0.35) current = i;
         var p = (vh * 0.35 - r.top) / Math.max(1, r.height);
-        fills[i].style.width = Math.max(0, Math.min(1, p)) * 100 + "%";
+        var w = Math.max(0, Math.min(1, p)) * 100 + "%";
+        holders.forEach(function (h) { h.querySelectorAll(".progress b")[i].style.width = w; });
       }
-      document.getElementById("barTitle").textContent = chapterLabel(chs[current][0], chs[current][1]);
-      document.getElementById("barCount").textContent = t("progress", { i: current + 1, n: chs.length });
+      holders.forEach(function (h) {
+        h.querySelector(".js-title").textContent = chapterLabel(chs[current][0], chs[current][1]);
+        h.querySelector(".js-count").textContent = t("progress", { i: current + 1, n: chs.length });
+      });
     }
     scrollHandler = function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
     window.addEventListener("scroll", scrollHandler, { passive: true });
@@ -380,6 +390,7 @@
       html += '<div class="content reading"><div class="cols"><div class="col side"><div class="section">' + esc(t("summary")) + "</div>";
       html += '<div id="summarySlot" data-key="' + esc(rangeKey(chs, mode, tr)) + '">' + summaryBlock(chs, mode, tr) + "</div>";
       html += '<p class="note" style="margin-top:8px">' + esc(t("summaryNote")) + "</p>";
+      html += '<div class="side-progress" id="sideProgress" aria-hidden="true"></div>';
       html += '</div><div class="col main"><div class="section">' + esc(t("passage", { tr: trName(tr) })) + "</div>";
       html += '<div class="card passage-card">' + passageHTML(chs, tr) + "</div>";
       html += '<div class="done-area"><button class="btn" type="button" id="done">' + esc(t("doneReading")) + "</button></div></div></div></div>";
