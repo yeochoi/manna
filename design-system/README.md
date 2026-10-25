@@ -35,18 +35,20 @@ Rules
 
 ## Typography
 
-Outfit for Latin letters and numbers, Noto Sans KR for Korean, both from Google Fonts. Four text styles in three sizes, the same as Stay Counter and Shuo, plus one size for Bible verses.
+Outfit for Latin letters and numbers, Noto Sans KR for Korean, both from Google Fonts. Five text styles, plus one size for Bible verses.
 
 | Style | Size | Weight | For |
 | --- | --- | --- | --- |
 | `display` | 34, 44 on laptop | Semibold | Today's reading, Journal, the first open headline, stats |
-| `title` | 15 | Semibold | Section headers, card titles, buttons, the month, summary numbers, chapter names |
+| `section` | 20 | Semibold | Section headers, like Summary, Passage and the Settings groups |
+| `title` | 15 | Semibold | Card titles, buttons, the month, summary numbers, chapter names |
 | `body` | 15 | Regular | Summary points, key verse, key message, journal messages, rows |
 | `small` | 13 | Regular | Dates, verse labels, verse numbers, chips, tab labels, notes |
 | `reading` | 17, line 1.75 | Regular | Verses in the passage only |
 
 Rules
-- Only 400 and 600. A header differs from text by weight only, never by size.
+- Only 400 and 600. Section headers are 20 so the sections on a page stand out. Inside a section, a header differs from text by weight only.
+- Sections of the same level share one header style and one rhythm. 32 above a header, 12 below it. Summary includes the key verse and key message with no divider inside. A hairline only separates sections.
 - Text inputs use 16 so iOS does not zoom.
 - Large text uses minus 0.02em letter spacing. Korean keeps whole words together on a line break.
 

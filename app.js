@@ -216,7 +216,7 @@
     }
     var kv = verseLookup(data.key_verse, tr);
     if (kv) {
-      html += '<div class="divider"></div><div><div class="verse-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyVerse")) + " · " + esc(kv.label) + "</div>" +
+      html += '<div><div class="verse-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyVerse")) + " · " + esc(kv.label) + "</div>" +
         (kv.text ? '<div class="verse-text">' + esc(kv.text) + "</div>" : "") + "</div>";
     }
     html += '<div class="message"><span class="message-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyMessage")) + '</span><span class="message-text">' + esc(data.message) + "</span></div>";
@@ -782,8 +782,8 @@
     view.className = "screen no-tabs";
     var d = t("ds"), ko = db.settings.lang === "ko";
     var cs = getComputedStyle(document.documentElement);
-    var sample = ko ? { range: "사무엘상 24~26장", date: "10월 25일 일요일", state: "오늘 읽기 완료 · 10월 25일 일요일", streak: "1일 연속", sum: "쉬운 요약", p1: "사울이 다윗을 쫓지만 다윗은 굴에서 사울을 살려 줍니다.", p2: "아비가일이 지혜롭게 다윗의 분노를 막습니다.", kvl: "핵심 구절 · 24장 6절", kv: "내가 손을 들어 여호와의 기름 부음을 받은 내 주를 치는 것은 여호와의 금하시는 것이니", ml: "핵심 메시지", msg: "나를 해친 사람에게도 직접 앙갚음하기보다 하나님께 맡기라는 메시지입니다.", pass: "본문 · 개역한글", ch: "24장", v: "사울이 블레셋 사람을 쫓다가 돌아오매", done: "읽기 완료", start: "창세기 1장부터 시작", small: "저장", week: "일월화수목금토" }
-      : { range: "1 Samuel 24–26", date: "Sunday, October 25", state: "Read today · Sunday, October 25", streak: "1 day streak", sum: "Easy summary", p1: "Saul hunts David, but David spares Saul in the cave.", p2: "Abigail wisely turns away David's anger.", kvl: "Key verse · 24:6", kv: "The LORD forbid that I should do this thing to my lord, the LORD's anointed.", ml: "Key message", msg: "Leave justice to God, even with people who hurt you.", pass: "Passage · WEB", ch: "Chapter 24", v: "When Saul had returned from following the Philistines", done: "Mark as read", start: "Start from Genesis 1", small: "Save", week: "SMTWTFS" };
+    var sample = ko ? { range: "사무엘상 24~26장", date: "10월 25일 일요일", state: "오늘 읽기 완료 · 10월 25일 일요일", streak: "1일 연속", sum: "요약", p1: "사울이 다윗을 쫓지만 다윗은 굴에서 사울을 살려 줍니다.", p2: "아비가일이 지혜롭게 다윗의 분노를 막습니다.", kvl: "핵심 구절 · 24장 6절", kv: "내가 손을 들어 여호와의 기름 부음을 받은 내 주를 치는 것은 여호와의 금하시는 것이니", ml: "핵심 메시지", msg: "나를 해친 사람에게도 직접 앙갚음하기보다 하나님께 맡기라는 메시지입니다.", pass: "본문", ch: "24장", v: "사울이 블레셋 사람을 쫓다가 돌아오매", done: "읽기 완료", start: "창세기 1장부터 시작", small: "저장", week: "일월화수목금토" }
+      : { range: "1 Samuel 24–26", date: "Sunday, October 25", state: "Read today · Sunday, October 25", streak: "1 day streak", sum: "Summary", p1: "Saul hunts David, but David spares Saul in the cave.", p2: "Abigail wisely turns away David's anger.", kvl: "Key verse · 24:6", kv: "The LORD forbid that I should do this thing to my lord, the LORD's anointed.", ml: "Key message", msg: "Leave justice to God, even with people who hurt you.", pass: "Passage", ch: "Chapter 24", v: "When Saul had returned from following the Philistines", done: "Mark as read", start: "Start from Genesis 1", small: "Save", week: "SMTWTFS" };
     var h = '<div class="bar narrow"><a class="round small" href="#/settings" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><h1 class="bar-title">' + esc(t("designSystem")) + '</h1><span></span></div><div class="content narrow ds">';
 
     h += '<div class="section">' + esc(d.color) + '</div><div class="sw">' + DS_COLORS.map(function (c) {
