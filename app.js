@@ -502,8 +502,8 @@
       var s = sc || db.summaries[rangeKey(e.chapters, e.mode || "together", entryTr(e))];
       var msgTr = sc ? curTr : entryTr(e);
       var msg = s ? (s.data.message || "") : "";
-      return '<a class="card jcard" href="#/day/' + sel + '"><span class="j-date">' + esc(longDate(parseKey(sel))) + '</span>' +
-        '<span class="j-row"><span class="j-title">' + esc(rangeLabel(e.chapters)) + "</span>" + icons.chev + "</span>" +
+      return '<a class="card jcard" href="#/day/' + sel + '"><span class="j-head"><span class="j-meta"><span class="j-date">' + esc(longDate(parseKey(sel))) + '</span>' +
+        '<span class="j-title">' + esc(rangeLabel(e.chapters)) + "</span></span>" + icons.chev + "</span>" +
         (msg ? '<span class="j-msg" lang="' + trLang(msgTr) + '">' + esc(msg) + "</span>" : "") + "</a>";
     }).join("") + "</div></div></div></div>";
     view.innerHTML = html;
