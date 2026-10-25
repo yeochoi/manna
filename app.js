@@ -161,11 +161,12 @@
     book: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M9 7h6"/></svg>',
     cal: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>'
   };
+  // Phones show tabs at the bottom only on the main screens.
+  // Laptops always show them as a top bar with the app name.
   function renderTabs(active) {
-    if (!active) { tabs.style.display = "none"; return; }
-    tabs.style.display = "";
+    tabs.className = "tabs" + (active ? "" : " hide-m");
     tabs.setAttribute("aria-label", t("menu"));
-    tabs.innerHTML = '<div class="inner">' +
+    tabs.innerHTML = '<div class="inner"><a class="brand" href="#/today">Manna</a>' +
       '<a href="#/today"' + (active === "today" ? ' aria-current="page"' : "") + ">" + icons.book + "<span>" + esc(t("tabToday")) + "</span></a>" +
       '<a href="#/record"' + (active === "record" ? ' aria-current="page"' : "") + ">" + icons.cal + "<span>" + esc(t("tabRecord")) + "</span></a></div>";
   }
@@ -331,7 +332,7 @@
       teardownReadingBar();
       view.innerHTML = head + '<span class="top-label">' + esc(t("today") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(t("welcomeTitle")) + "</h1></header>" +
         '<div class="content"><p class="note" style="margin:20px 0 16px;font-size:15px;line-height:22px">' + esc(t("welcomeBody")) + "</p>" +
-        '<div class="done-area" style="margin-top:0"><button class="btn" type="button" id="startGen">' + esc(t("startGenesis")) + "</button>" +
+        '<div class="done-area welcome-actions" style="margin-top:0"><button class="btn" type="button" id="startGen">' + esc(t("startGenesis")) + "</button>" +
         '<a class="btn secondary" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/pick">' + esc(t("pickPlace")) + "</a></div></div>";
       document.getElementById("startGen").onclick = function () { db.bookmark = { b: 1, c: 0 }; save(); render(); };
       return;
@@ -349,18 +350,19 @@
       Promise.all(needs).then(function () {
         if (!onRoute("#/today")) return;
         var html = head + '<span class="top-label">' + esc(t("doneToday") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(rangeLabel(allChs)) + "</h1></header>";
-        html += '<div class="content">';
+        html += '<div class="content"><div class="cols"><div class="col side">';
         entries.forEach(function (e, idx) {
           var m = e.mode || "together";
           var isLast = idx === entries.length - 1;
           html += '<div class="section">' + esc(entries.length > 1 ? rangeLabel(e.chapters) : t("summary")) + "</div>";
           html += '<div id="' + (isLast ? "summarySlot" : "s" + idx) + '" data-key="' + esc(rangeKey(e.chapters, m, entryTr(e))) + '">' + summaryBlock(e.chapters, m, entryTr(e), { readOnly: !isLast }) + "</div>";
         });
-        html += '<button class="link-btn" type="button" id="togglePassage">' + esc(ui.openPassage.today ? t("hidePassage") : t("showPassage")) + "</button>";
+        html += '</div><div class="col main"><div class="section">' + esc(t("passage", { tr: trName(entryTr(last)) })) + "</div>";
+        html += '<button class="link-btn" type="button" id="togglePassage" style="padding-top:0">' + esc(ui.openPassage.today ? t("hidePassage") : t("showPassage")) + "</button>";
         if (ui.openPassage.today) {
           entries.forEach(function (e) { html += '<div class="card passage-card" style="margin-bottom:12px">' + passageHTML(e.chapters, entryTr(e)) + "</div>"; });
         }
-        html += '<div class="done-area"><button class="btn secondary" type="button" id="readMore">' + esc(t("readMore", { n: db.settings.perDay })) + "</button></div></div>";
+        html += '<div class="done-area"><button class="btn secondary" type="button" id="readMore">' + esc(t("readMore", { n: db.settings.perDay })) + "</button></div></div></div></div>";
         view.innerHTML = html;
         teardownReadingBar();
         var slot = document.getElementById("summarySlot");
@@ -375,12 +377,12 @@
     loadChapters(chs, tr).then(function () {
       if (!onRoute("#/today")) return;
       var html = head + '<span class="top-label">' + esc(t("today") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(rangeLabel(chs)) + "</h1></header>";
-      html += '<div class="content"><div class="section">' + esc(t("summary")) + "</div>";
+      html += '<div class="content reading"><div class="cols"><div class="col side"><div class="section">' + esc(t("summary")) + "</div>";
       html += '<div id="summarySlot" data-key="' + esc(rangeKey(chs, mode, tr)) + '">' + summaryBlock(chs, mode, tr) + "</div>";
       html += '<p class="note" style="margin-top:8px">' + esc(t("summaryNote")) + "</p>";
-      html += '<div class="section" style="margin-top:28px">' + esc(t("passage", { tr: trName(tr) })) + "</div>";
+      html += '</div><div class="col main"><div class="section">' + esc(t("passage", { tr: trName(tr) })) + "</div>";
       html += '<div class="card passage-card">' + passageHTML(chs, tr) + "</div>";
-      html += '<div class="done-area"><button class="btn" type="button" id="done">' + esc(t("doneReading")) + "</button></div></div>";
+      html += '<div class="done-area"><button class="btn" type="button" id="done">' + esc(t("doneReading")) + "</button></div></div></div></div>";
       view.innerHTML = html;
       wireSummary(document.getElementById("summarySlot"), chs, mode, tr);
       setupReadingBar(chs);
@@ -426,7 +428,7 @@
     var html = '<header class="top"><h1 class="page-title">' + esc(t("recordTitle")) + "</h1>" +
       '<div class="stats"><div class="stat"><b>' + esc(t("days", { n: streak() })) + "</b><span>" + esc(t("streakLabel")) + '</span></div><div class="stat-sep"></div>' +
       '<div class="stat"><b>' + esc(t("days", { n: monthCount })) + "</b><span>" + esc(t("monthLabel")) + "</span></div></div></header>";
-    html += '<div class="content"><div class="cal-head"><button class="round small" type="button" id="prevM" aria-label="' + esc(t("prevMonth")) + '">' + icons.left + "</button>" +
+    html += '<div class="content"><div class="cols"><div class="col"><div class="cal-head"><button class="round small" type="button" id="prevM" aria-label="' + esc(t("prevMonth")) + '">' + icons.left + "</button>" +
       "<span>" + esc(t("monthTitle", { y: y, m: m + 1, month: monthName(y, m) })) + '</span><button class="round small" type="button" id="nextM" aria-label="' + esc(t("nextMonth")) + '">' + icons.right + "</button></div>";
     html += '<div class="card cal"><div class="cal-grid">' + S.weekdays.map(function (w) { return '<div class="cal-week">' + esc(w) + "</div>"; }).join("") + "</div>";
     html += '<div class="cal-grid">';
@@ -441,12 +443,12 @@
       if (future) cls += " future";
       html += '<div class="cal-cell"><button type="button" class="' + cls + '" data-date="' + k + '"' + (future ? " disabled" : "") + ' aria-pressed="' + (k === sel) + '">' + d + "</button></div>";
     }
-    html += "</div></div>";
+    html += "</div></div></div><div class=\"col day-col\">";
 
     html += '<div class="section">' + esc(longDate(parseKey(sel))) + "</div>";
     var entries = db.log[sel] || [];
     if (!entries.length) {
-      view.innerHTML = html + '<p class="note">' + esc(t("nothingThatDay")) + "</p></div>";
+      view.innerHTML = html + '<p class="note">' + esc(t("nothingThatDay")) + "</p></div></div></div>";
       wireCalendar();
       return;
     }
@@ -455,7 +457,7 @@
       var sub = s ? (s.data.message || "") : "";
       return '<a class="row-item" href="#/day/' + sel + '"><span class="row-stack"><span style="font-size:17px;font-weight:600">' + esc(rangeLabel(e.chapters)) + "</span>" +
         (sub ? '<span class="sub" lang="' + trLang(entryTr(e)) + '">' + esc(sub.length > 60 ? sub.slice(0, 60) + "…" : sub) + "</span>" : "") + "</span>" + icons.chev + "</a>";
-    }).join("") + "</div></div>";
+    }).join("") + "</div></div></div></div>";
     view.innerHTML = html;
     wireCalendar();
   }
@@ -482,8 +484,8 @@
     entries.forEach(function (e) { allChs = allChs.concat(e.chapters); });
     Promise.all(entries.map(function (e) { return loadChapters(e.chapters, entryTr(e)); })).then(function () {
       if (!onRoute("#/day/")) return;
-      var html = '<div class="bar"><a class="round small" href="#/record" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(longDate(parseKey(key))) + "</span><span></span></div>";
-      html += '<div class="content">';
+      var html = '<div class="bar narrow"><a class="round small" href="#/record" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(longDate(parseKey(key))) + "</span><span></span></div>";
+      html += '<div class="content narrow">';
       if (!entries.length) {
         view.innerHTML = html + '<p class="note" style="margin-top:20px">' + esc(t("nothingThatDay")) + "</p></div>";
         return;
@@ -517,8 +519,8 @@
     var s = db.settings;
     var key = getKey();
     var bm = db.bookmark && db.bookmark.c > 0 ? chapterLabel(db.bookmark.b, db.bookmark.c) : t("notSet");
-    var html = '<div class="bar"><a class="round small" href="#/today" aria-label="' + esc(t("close")) + '">' + icons.x + '</a><span class="bar-title">' + esc(t("settings")) + "</span><span></span></div>";
-    html += '<div class="content">';
+    var html = '<div class="bar narrow"><a class="round small" href="#/today" aria-label="' + esc(t("close")) + '">' + icons.x + '</a><span class="bar-title">' + esc(t("settings")) + "</span><span></span></div>";
+    html += '<div class="content narrow">';
 
     html += '<div class="section">' + esc(t("reading")) + '</div><div class="card">' +
       '<div class="block"><span>' + esc(t("perDay")) + "</span>" + segHTML("perDay", [1, 2, 3, 4, 5].map(function (n) { return { v: n, l: t("chapters", { n: n }) }; }), s.perDay, t("perDay")) + "</div>" +
@@ -618,7 +620,7 @@
     teardownReadingBar();
     view.className = "screen no-tabs";
     var cur = db.bookmark && db.bookmark.c > 0 ? db.bookmark : null;
-    var html = '<div class="bar"><a class="round small" href="#/settings" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(t("pickTitle")) + '</span><span></span></div><div class="content">';
+    var html = '<div class="bar narrow"><a class="round small" href="#/settings" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(t("pickTitle")) + '</span><span></span></div><div class="content narrow">';
     function grid(from, to) {
       var g = '<div class="book-grid">';
       for (var i = from; i <= to; i++) g += '<button type="button" data-book="' + i + '" aria-pressed="' + (ui.pickBook === i) + '">' + esc(bookName(i)) + "</button>";
