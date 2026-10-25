@@ -48,7 +48,7 @@ Outfit for Latin letters and numbers, Noto Sans KR for Korean, both from Google 
 
 Rules
 - Only 400 and 600. Section headers are 20 so the sections on a page stand out. Inside a section, a header differs from text by weight only.
-- Sections of the same level share one header style and one rhythm. 32 above a header, 12 below it. Summary includes the key verse and key message with no divider inside. A hairline only separates sections.
+- Sections of the same level share one header style and one rhythm. 32 above a header, exactly 12 between the header and its content, measured from the text. Taller tap areas add their height above the text, never below. Summary includes the key verse and key message with no divider inside. A hairline only separates sections.
 - Text inputs use 16 so iOS does not zoom.
 - Large text uses minus 0.02em letter spacing. Korean keeps whole words together on a line break.
 

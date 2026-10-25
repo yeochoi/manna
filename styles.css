@@ -460,3 +460,13 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
   /* Line Passage up with Summary in the next column. */
   .col.main > .disc:first-child { margin-top: 13px; border-top: 0; }
 }
+/* Every section header has exactly 12 between it and its content.
+   Passage keeps a large tap area by putting the extra height above the text, not below. */
+.disc-head { min-height: 0; padding: 20px 0 12px; align-items: center; }
+.disc-head[aria-expanded="false"] { padding-bottom: 20px; }
+.disc-body .chapter:first-child .chapter-break,
+.passage-card .chapter:first-child .chapter-break { margin-top: 0; }
+@media (min-width: 900px) {
+  .col.main > .disc:first-child { margin-top: 12px; }
+}
+[data-key] > .card.pad, .card.pad.summary, .col.side .card.pad { padding-top: 0; }
