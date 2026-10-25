@@ -115,13 +115,13 @@ a { color: var(--green-text); }
 @media (prefers-reduced-motion: reduce) { .skeleton span { animation: none; } }
 
 /* Passage */
-.chapter-break { display: flex; align-items: center; gap: 12px; margin: 26px 0 10px; }
-.chapter-break span { font-size: 13px; font-weight: 400; color: var(--green-text); white-space: nowrap; }
-.chapter-break i { flex: 1; height: 1px; background: var(--line); }
+/* Chapter names stand alone in green. Space between chapters does the separating, no lines. */
+.chapter-break { margin: 36px 0 8px; font-size: 15px; line-height: 20px; font-weight: 600; }
+.chapter-break span { font-size: 15px; line-height: 20px; font-weight: 600; color: var(--green-text); }
 .verse { margin: 0 0 14px; font-size: var(--reading-size); line-height: 1.75; }
 .verse sup { color: var(--green-text); font-size: 13px; font-weight: 400; margin-right: 4px; vertical-align: super; line-height: 0; }
 .passage-card { padding: 4px 18px 8px; }
-.passage-card .chapter-break:first-child { margin-top: 18px; }
+.passage-card .chapter:first-child .chapter-break { margin-top: 18px; }
 
 /* Sticky reading bar */
 .reading-bar {
@@ -332,9 +332,8 @@ input[type="range"] { width: 100%; accent-color: var(--primary); height: 24px; }
 .disc { margin-top: 24px; overflow: hidden; }
 .disc + .disc { margin-top: 12px; }
 .disc-head { width: 100%; min-height: 54px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: none; border: none; text-align: left; font-size: 15px; font-weight: 600; color: var(--ink); }
-.disc-head[aria-expanded="true"] { border-bottom: 1px solid var(--line); }
 .disc-body { padding: 4px 18px 8px; }
-.disc-body .chapter-break:first-child { margin-top: 18px; }
+.disc-body .chapter:first-child .chapter-break { margin-top: 12px; }
 .disc-head:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: var(--radius-card); }
 
 /* Journal day card. Chevron centers on the date and title as one block. */

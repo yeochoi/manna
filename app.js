@@ -282,7 +282,7 @@
   // ---------- Passage ----------
   function passageHTML(chs, tr) {
     return '<div lang="' + trLang(tr) + '">' + sections(chs, tr).map(function (s, i) {
-      return '<section class="chapter" id="ch-' + i + '"><div class="chapter-break"><span>' + esc(chapterLabel(s.book, s.chapter)) + "</span><i></i></div>" +
+      return '<section class="chapter" id="ch-' + i + '"><h2 class="chapter-break"><span>' + esc(chapterLabel(s.book, s.chapter)) + "</span></h2>" +
         s.verses.map(function (v, j) { return '<p class="verse"><sup>' + (j + 1) + "</sup>" + esc(v) + "</p>"; }).join("") + "</section>";
     }).join("") + "</div>";
   }
@@ -799,7 +799,7 @@
       '<div class="message"><span class="message-label">' + esc(sample.ml) + '</span><span class="message-text">' + esc(sample.msg) + "</span></div></div>";
 
     h += '<div class="section">' + esc(d.passage) + '</div><div class="card disc" style="margin-top:0"><div class="disc-head">' + esc(sample.pass) + icons.down + "</div></div>" +
-      '<div class="card disc"><div class="disc-head" style="border-bottom:1px solid var(--line)">' + esc(sample.pass) + icons.up + '</div><div class="disc-body"><div class="chapter-break"><span>' + esc(sample.ch) + '</span><i></i></div><p class="verse"><sup>1</sup>' + esc(sample.v) + "</p></div></div>";
+      '<div class="card disc"><div class="disc-head">' + esc(sample.pass) + icons.up + '</div><div class="disc-body"><section class="chapter"><div class="chapter-break"><span>' + esc(sample.ch) + '</span></div><p class="verse"><sup>1</sup>' + esc(sample.v) + "</p></section></div></div>";
 
     h += '<div class="section">' + esc(d.journal) + '</div><div class="card jcard"><span class="j-head"><span class="j-meta"><span class="j-date">' + esc(sample.date) + '</span><span class="j-title">' + esc(sample.range) + "</span></span>" + icons.chev + '</span><span class="j-msg">' + esc(sample.msg) + "</span></div>";
 

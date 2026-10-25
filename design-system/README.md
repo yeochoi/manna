@@ -40,7 +40,7 @@ Outfit for Latin letters and numbers, Noto Sans KR for Korean, both from Google 
 | Style | Size | Weight | For |
 | --- | --- | --- | --- |
 | `display` | 34, 44 on laptop | Semibold | Today's reading, Journal, the first open headline, stats |
-| `title` | 15 | Semibold | Section headers, card titles, buttons, the month, summary numbers |
+| `title` | 15 | Semibold | Section headers, card titles, buttons, the month, summary numbers, chapter names |
 | `body` | 15 | Regular | Summary points, key verse, key message, journal messages, rows |
 | `small` | 13 | Regular | Dates, verse labels, verse numbers, chips, tab labels, notes |
 | `reading` | 17, line 1.75 | Regular | Verses in the passage only |
