@@ -780,11 +780,12 @@
     renderTabs(null);
     teardownReadingBar();
     view.className = "screen no-tabs";
-    var d = t("ds"), ko = db.settings.lang === "ko";
+    // The design system page is always in English, whatever the app language.
+    var EN = window.STRINGS.en, d = EN.ds, ko = false;
     var cs = getComputedStyle(document.documentElement);
     var sample = ko ? { range: "사무엘상 24~26장", date: "10월 25일 일요일", state: "오늘 읽기 완료 · 10월 25일 일요일", streak: "1일 연속", sum: "요약", p1: "사울이 다윗을 쫓지만 다윗은 굴에서 사울을 살려 줍니다.", p2: "아비가일이 지혜롭게 다윗의 분노를 막습니다.", kvl: "핵심 구절 · 24장 6절", kv: "내가 손을 들어 여호와의 기름 부음을 받은 내 주를 치는 것은 여호와의 금하시는 것이니", ml: "핵심 메시지", msg: "나를 해친 사람에게도 직접 앙갚음하기보다 하나님께 맡기라는 메시지입니다.", pass: "본문", ch: "24장", v: "사울이 블레셋 사람을 쫓다가 돌아오매", done: "읽기 완료", start: "창세기 1장부터 시작", small: "저장", week: "일월화수목금토" }
-      : { range: "1 Samuel 24–26", date: "Sunday, October 25", state: "Read today · Sunday, October 25", streak: "1 day streak", sum: "Summary", p1: "Saul hunts David, but David spares Saul in the cave.", p2: "Abigail wisely turns away David's anger.", kvl: "Key verse · 24:6", kv: "The LORD forbid that I should do this thing to my lord, the LORD's anointed.", ml: "Key message", msg: "Leave justice to God, even with people who hurt you.", pass: "Passage", ch: "Chapter 24", v: "When Saul had returned from following the Philistines", done: "Mark as read", start: "Start from Genesis 1", small: "Save", week: "SMTWTFS" };
-    var h = '<div class="bar narrow"><a class="round small" href="#/settings" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><h1 class="bar-title">' + esc(t("designSystem")) + '</h1><span></span></div><div class="content narrow ds">';
+      : { range: "1 Samuel 24–26", date: "Sunday, October 25", state: "Read today · Sunday, October 25", streak: "1 day streak", sum: "Summary", p1: "Saul hunts David, but David spares Saul in the cave.", p2: "Abigail wisely turns away David's anger.", kvl: "Key verse · 24:6", kv: "The LORD forbid that I should do this thing to my lord, the LORD's anointed.", ml: "Key message", msg: "Leave justice to God, even with people who hurt you.", pass: "Passage", ch: "Chapter 24", v: "When Saul had returned from following the Philistines", done: "I've read it", start: "Start from Genesis 1", small: "Save", week: "SMTWTFS" };
+    var h = '<div class="bar narrow" lang="en"><a class="round small" href="#/settings" aria-label="' + esc(EN.back) + '">' + icons.left + '</a><h1 class="bar-title">' + esc(EN.designSystem) + '</h1><span></span></div><div class="content narrow ds" lang="en">';
 
     h += '<div class="section">' + esc(d.color) + '</div><div class="sw">' + DS_COLORS.map(function (c) {
       var v = cs.getPropertyValue("--" + c[1]).trim();
@@ -794,19 +795,20 @@
     h += '<div class="section">' + esc(d.type) + '</div><div class="card">' +
       '<div class="tr"><div class="page-title">' + esc(sample.range) + "</div><small>" + esc(d.tDisplay) + "</small></div>" +
       '<div class="tr"><div class="verse" style="margin:0;font-size:17px">' + esc(sample.v) + "</div><small>" + esc(d.tReading) + "</small></div>" +
-      '<div class="tr"><div class="j-title">' + esc(sample.sum) + "</div><small>" + esc(d.tTitle) + "</small></div>" +
+      '<div class="tr"><div class="section" style="margin:0">' + esc(sample.sum) + "</div><small>" + esc(d.tSection) + "</small></div>" +
+      '<div class="tr"><div class="j-title">' + esc(sample.ml) + "</div><small>" + esc(d.tTitle) + "</small></div>" +
       '<div class="tr"><div class="message-text">' + esc(sample.p1) + "</div><small>" + esc(d.tBody) + "</small></div>" +
       '<div class="tr"><div class="note">' + esc(sample.date) + "</div><small>" + esc(d.tSmall) + "</small></div></div>";
 
-    h += '<div class="section">' + esc(d.header) + '</div><div class="card ds-demo"><div class="top-row" style="margin-bottom:14px"><span class="streak">' + icons.flame + esc(sample.streak) + '</span><span class="round" aria-hidden="true">' + icons.gear + "</span></div>" +
+    h += '<div class="section">' + esc(d.header) + '</div><div class="ds-demo"><div class="top-row" style="margin-bottom:14px"><span class="streak">' + icons.flame + esc(sample.streak) + '</span><span class="round" aria-hidden="true">' + icons.gear + "</span></div>" +
       '<div class="top-label">' + esc(sample.state) + '</div><div class="answer" style="margin-top:8px">' + esc(sample.range) + "</div></div>";
 
     h += '<div class="section">' + esc(d.summary) + '</div><div class="card pad summary"><ol class="points">' +
       '<li><span class="num">1</span><span>' + esc(sample.p1) + '</span></li><li><span class="num">2</span><span>' + esc(sample.p2) + "</span></li></ol>" +
-      '<div class="divider"></div><div><div class="verse-label">' + esc(sample.kvl) + '</div><div class="verse-text">' + esc(sample.kv) + "</div></div>" +
+      '<div><div class="verse-label">' + esc(sample.kvl) + '</div><div class="verse-text">' + esc(sample.kv) + "</div></div>" +
       '<div class="message"><span class="message-label">' + esc(sample.ml) + '</span><span class="message-text">' + esc(sample.msg) + "</span></div></div>";
 
-    h += '<div class="section">' + esc(d.passage) + '</div><div class="card disc" style="margin-top:0"><div class="disc-head">' + esc(sample.pass) + icons.down + "</div></div>" +
+    h += '<p class="note" style="margin:32px 0 0">' + esc(d.passage) + '</p><div class="card disc" style="margin-top:0"><div class="disc-head">' + esc(sample.pass) + icons.down + "</div></div>" +
       '<div class="card disc"><div class="disc-head">' + esc(sample.pass) + icons.up + '</div><div class="disc-body"><section class="chapter"><div class="chapter-break"><span>' + esc(sample.ch) + '</span></div><p class="verse"><sup>1</sup>' + esc(sample.v) + "</p></section></div></div>";
 
     h += '<div class="section">' + esc(d.journal) + '</div><div class="card jcard"><span class="j-head"><span class="j-meta"><span class="j-date">' + esc(sample.date) + '</span><span class="j-title">' + esc(sample.range) + "</span></span>" + icons.chev + '</span><span class="j-msg">' + esc(sample.msg) + "</span></div>";
@@ -820,7 +822,7 @@
     h += '<div class="section">' + esc(d.buttons) + '</div><div style="display:flex;flex-direction:column;gap:10px"><span class="btn ds-btn">' + esc(sample.done) + '</span><span class="btn secondary ds-btn">' + esc(sample.start) + '</span><span class="btn small ds-btn">' + esc(sample.small) + "</span></div>";
 
     h += '<div class="section">' + esc(d.controls) + '</div><div class="card"><div class="block">' + segHTML("dsdemo", [{ v: "ko", l: "한국어", lang: "ko" }, { v: "en", l: "English", lang: "en" }], "ko", d.controls) + "</div>" +
-      '<div class="row-item"><span>' + esc(t("lastRead")) + '</span><span class="row-value">' + esc(chapterLabel(9, 26)) + icons.chev + "</span></div></div>";
+      '<div class="row-item"><span>' + esc(EN.lastRead) + '</span><span class="row-value">' + "1 Samuel 26" + icons.chev + "</span></div></div>";
 
     h += '<div class="section">' + esc(d.rulesTitle) + '</div><div class="card">' + d.rules.map(function (r) { return '<div class="tr ds-rule">' + esc(r) + "</div>"; }).join("") + "</div>";
     view.innerHTML = h + "</div>";
