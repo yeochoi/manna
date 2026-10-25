@@ -157,6 +157,8 @@
     left: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
     right: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>',
     chev: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#878394" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>',
+    down: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#878394" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
+    up: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#878394" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>',
     x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     book: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M9 7h6"/></svg>',
     cal: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>'
@@ -254,8 +256,8 @@
     });
   }
   function refreshSummary(chs, mode, tr) {
-    var slot = document.getElementById("summarySlot");
-    if (!slot || slot.getAttribute("data-key") !== rangeKey(chs, mode, tr)) return;
+    var slot = view.querySelector('[data-key="' + CSS.escape(rangeKey(chs, mode, tr)) + '"]');
+    if (!slot) return;
     slot.innerHTML = summaryBlock(chs, mode, tr);
     wireSummary(slot, chs, mode, tr);
   }
@@ -332,6 +334,12 @@
     bar.setAttribute("aria-hidden", "true");
   }
 
+  // Expands in place: a card row with a chevron down, opening inside the same card.
+  function disclosure(id, label, open, inner) {
+    return '<div class="card disc"><button class="disc-head" type="button" data-disc="' + id + '" aria-expanded="' + !!open + '" aria-controls="' + id + '-body"><span>' + esc(label) + "</span>" + (open ? icons.up : icons.down) + "</button>" +
+      (open ? '<div class="disc-body" id="' + id + '-body">' + inner + "</div>" : "") + "</div>";
+  }
+
   // ---------- Screens ----------
   var ui = { extra: false, month: null, selected: null, openPassage: {}, pickBook: null, resetOpen: false };
   function onRoute(prefix) { var h = location.hash || "#/today"; return h.indexOf(prefix) === 0; }
@@ -382,7 +390,7 @@
       var last = entries[entries.length - 1];
       var allChs = [];
       entries.forEach(function (e) { allChs = allChs.concat(e.chapters); });
-      var needs = entries.map(function (e) { return loadChapters(e.chapters, entryTr(e)); });
+      var needs = entries.map(function (e) { return loadChapters(e.chapters, tr); });
       Promise.all(needs).then(function () {
         if (!onRoute("#/today")) return;
         var html = head + '<span class="top-label">' + esc(t("doneToday") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(rangeLabel(allChs)) + "</h1></header>";
@@ -391,19 +399,19 @@
           var m = e.mode || "together";
           var isLast = idx === entries.length - 1;
           html += '<div class="section">' + esc(entries.length > 1 ? rangeLabel(e.chapters) : t("summary")) + "</div>";
-          html += '<div id="' + (isLast ? "summarySlot" : "s" + idx) + '" data-key="' + esc(rangeKey(e.chapters, m, entryTr(e))) + '">' + summaryBlock(e.chapters, m, entryTr(e), { readOnly: !isLast }) + "</div>";
+          html += '<div id="' + (isLast ? "summarySlot" : "s" + idx) + '" data-key="' + esc(rangeKey(e.chapters, m, tr)) + '">' + summaryBlock(e.chapters, m, tr) + "</div>";
         });
-        html += '</div><div class="col main"><div class="section">' + esc(t("passage", { tr: trName(entryTr(last)) })) + "</div>";
-        html += '<button class="link-btn" type="button" id="togglePassage" style="padding-top:0">' + esc(ui.openPassage.today ? t("hidePassage") : t("showPassage")) + "</button>";
-        if (ui.openPassage.today) {
-          entries.forEach(function (e) { html += '<div class="card passage-card" style="margin-bottom:12px">' + passageHTML(e.chapters, entryTr(e)) + "</div>"; });
-        }
+        html += '</div><div class="col main">';
+        var inner = ui.openPassage.today ? entries.map(function (e) { return passageHTML(e.chapters, tr); }).join("") : "";
+        html += disclosure("today", t("passage", { tr: trName(tr) }), ui.openPassage.today, inner);
         html += '<div class="done-area"><button class="btn secondary" type="button" id="readMore">' + esc(t("readMore", { n: db.settings.perDay })) + "</button></div></div></div></div>";
         view.innerHTML = html;
         teardownReadingBar();
-        var slot = document.getElementById("summarySlot");
-        if (slot) wireSummary(slot, last.chapters, last.mode || "together", entryTr(last));
-        document.getElementById("togglePassage").onclick = function () { ui.openPassage.today = !ui.openPassage.today; renderToday(); };
+        entries.forEach(function (e) {
+          var sl = view.querySelector('[data-key="' + CSS.escape(rangeKey(e.chapters, e.mode || "together", tr)) + '"]');
+          if (sl) wireSummary(sl, e.chapters, e.mode || "together", tr);
+        });
+        view.querySelector('[data-disc="today"]').onclick = function () { ui.openPassage.today = !ui.openPassage.today; renderToday(); };
         document.getElementById("readMore").onclick = function () { ui.extra = true; window.scrollTo(0, 0); renderToday(); };
       }).catch(showLoadError);
       return;
@@ -482,18 +490,21 @@
     }
     html += "</div></div></div><div class=\"col day-col\">";
 
-    html += '<div class="section">' + esc(longDate(parseKey(sel))) + "</div>";
     var entries = db.log[sel] || [];
     if (!entries.length) {
-      view.innerHTML = html + '<p class="note">' + esc(t("nothingThatDay")) + "</p></div></div></div>";
+      view.innerHTML = html + '<div class="card jcard"><span class="j-date">' + esc(longDate(parseKey(sel))) + '</span><span class="j-msg muted">' + esc(t("nothingThatDay")) + "</span></div></div></div></div>";
       wireCalendar();
       return;
     }
-    html += '<div class="card">' + entries.map(function (e) {
-      var s = db.summaries[rangeKey(e.chapters, e.mode || "together", entryTr(e))];
-      var sub = s ? (s.data.message || "") : "";
-      return '<a class="row-item" href="#/day/' + sel + '"><span class="row-stack"><span style="font-size:17px;font-weight:600">' + esc(rangeLabel(e.chapters)) + "</span>" +
-        (sub ? '<span class="sub" lang="' + trLang(entryTr(e)) + '">' + esc(sub.length > 60 ? sub.slice(0, 60) + "…" : sub) + "</span>" : "") + "</span>" + icons.chev + "</a>";
+    html += '<div class="j-list">' + entries.map(function (e) {
+      var curTr = db.settings.translation;
+      var sc = db.summaries[rangeKey(e.chapters, e.mode || "together", curTr)];
+      var s = sc || db.summaries[rangeKey(e.chapters, e.mode || "together", entryTr(e))];
+      var msgTr = sc ? curTr : entryTr(e);
+      var msg = s ? (s.data.message || "") : "";
+      return '<a class="card jcard" href="#/day/' + sel + '"><span class="j-date">' + esc(longDate(parseKey(sel))) + '</span>' +
+        '<span class="j-row"><span class="j-title">' + esc(rangeLabel(e.chapters)) + "</span>" + icons.chev + "</span>" +
+        (msg ? '<span class="j-msg" lang="' + trLang(msgTr) + '">' + esc(msg) + "</span>" : "") + "</a>";
     }).join("") + "</div></div></div></div>";
     view.innerHTML = html;
     wireCalendar();
@@ -517,9 +528,10 @@
     teardownReadingBar();
     view.className = "screen no-tabs";
     var entries = db.log[key] || [];
+    var tr = db.settings.translation;
     var allChs = [];
     entries.forEach(function (e) { allChs = allChs.concat(e.chapters); });
-    Promise.all(entries.map(function (e) { return loadChapters(e.chapters, entryTr(e)); })).then(function () {
+    Promise.all(entries.map(function (e) { return loadChapters(e.chapters, tr); })).then(function () {
       if (!onRoute("#/day/")) return;
       var html = '<div class="bar narrow"><a class="round small" href="#/record" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(longDate(parseKey(key))) + "</span><span></span></div>";
       html += '<div class="content narrow">';
@@ -530,14 +542,17 @@
       html += '<h1 class="answer" style="margin-top:20px">' + esc(rangeLabel(allChs)) + "</h1>";
       entries.forEach(function (e, i) {
         html += '<div class="section">' + esc(entries.length > 1 ? rangeLabel(e.chapters) : t("summary")) + "</div>";
-        html += summaryBlock(e.chapters, e.mode || "together", entryTr(e), { readOnly: true });
+        html += '<div class="slot" data-key="' + esc(rangeKey(e.chapters, e.mode || "together", tr)) + '">' + summaryBlock(e.chapters, e.mode || "together", tr) + '</div>';
         var open = ui.openPassage[key + i];
-        html += '<button class="link-btn" type="button" data-toggle="' + i + '">' + esc(open ? t("hidePassage") : t("showPassage")) + "</button>";
-        if (open) html += '<div class="card passage-card">' + passageHTML(e.chapters, entryTr(e)) + "</div>";
+        html += disclosure("d" + i, t("passage", { tr: trName(tr) }), open, open ? passageHTML(e.chapters, tr) : "");
       });
       view.innerHTML = html + "</div>";
-      Array.prototype.forEach.call(view.querySelectorAll("[data-toggle]"), function (b) {
-        b.onclick = function () { var i = b.getAttribute("data-toggle"); ui.openPassage[key + i] = !ui.openPassage[key + i]; renderDay(key); };
+      entries.forEach(function (e) {
+        var sl = view.querySelector('[data-key="' + CSS.escape(rangeKey(e.chapters, e.mode || "together", tr)) + '"]');
+        if (sl) wireSummary(sl, e.chapters, e.mode || "together", tr);
+      });
+      Array.prototype.forEach.call(view.querySelectorAll("[data-disc]"), function (b) {
+        b.onclick = function () { var i = b.getAttribute("data-disc").slice(1); ui.openPassage[key + i] = !ui.openPassage[key + i]; renderDay(key); };
       });
     }).catch(showLoadError);
   }

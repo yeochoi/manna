@@ -290,8 +290,8 @@ input[type="range"] { width: 100%; accent-color: var(--primary); height: 24px; }
 
 @media (min-width: 900px) {
   .col.side { max-height: calc(100vh - var(--topbar)); overflow-y: auto; padding-bottom: 24px; }
-  .day-col { padding-top: 46px; }
-  .day-col .section:first-child { margin-top: 22px; }
+  .day-col { padding-top: 68px; }
+  .col.main > .disc:first-child { margin-top: 48px; }
 }
 
 /* First open */
@@ -326,3 +326,29 @@ input[type="range"] { width: 100%; accent-color: var(--primary); height: 24px; }
   .w-title { margin-top: 16px; font-size: 32px; line-height: 38px; }
   .w-feats { margin-top: 24px; gap: 14px; }
 }
+
+/* Expand in place: card row with chevron down */
+.disc { margin-top: 24px; overflow: hidden; }
+.disc + .disc { margin-top: 12px; }
+.disc-head { width: 100%; min-height: 54px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: none; border: none; text-align: left; font-size: 17px; font-weight: 600; color: var(--ink); }
+.disc-head[aria-expanded="true"] { border-bottom: 1px solid var(--line); }
+.disc-body { padding: 4px 18px 8px; }
+.disc-body .chapter-break:first-child { margin-top: 18px; }
+.disc-head:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: var(--radius-card); }
+
+/* Journal day card */
+.j-list { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+.jcard { display: flex; flex-direction: column; gap: 6px; padding: 18px 16px; text-decoration: none; color: var(--ink); }
+.day-col > .jcard { margin-top: 24px; }
+.j-date { font-size: 13px; line-height: 18px; color: var(--muted); }
+.j-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.j-title { font-size: 17px; line-height: 22px; font-weight: 600; }
+.j-msg { margin-top: 4px; font-size: 15px; line-height: 22px; color: var(--ink); }
+.j-msg.muted { color: var(--muted); margin-top: 0; }
+a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@media (min-width: 900px) {
+  .j-list, .day-col > .jcard { margin-top: 0; }
+  a.jcard:hover { background: #FBFAF8; }
+  .disc-head:hover { background: #FBFAF8; }
+}
+.card.pad + .disc, .note-box + .disc { margin-top: 12px; }
