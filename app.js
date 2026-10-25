@@ -169,6 +169,16 @@
     tabs.innerHTML = '<div class="inner"><a class="brand" href="#/today">Manna</a>' +
       '<a href="#/today"' + (active === "today" ? ' aria-current="page"' : "") + ">" + icons.book + "<span>" + esc(t("tabToday")) + "</span></a>" +
       '<a href="#/record"' + (active === "record" ? ' aria-current="page"' : "") + ">" + icons.cal + "<span>" + esc(t("tabRecord")) + "</span></a></div>";
+    // Tapping the tab you are already on scrolls back to the top.
+    Array.prototype.forEach.call(tabs.querySelectorAll("a"), function (a) {
+      a.onclick = function (e) {
+        var here = location.hash || "#/today";
+        if (a.getAttribute("href") !== here) return;
+        e.preventDefault();
+        var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, behavior: calm ? "auto" : "smooth" });
+      };
+    });
   }
   function applyFont() { document.documentElement.style.setProperty("--reading-size", db.settings.fontSize + "px"); }
   function showLoadError() {
