@@ -1,0 +1,29 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=Noto+Sans+KR:wght@400;600&display=swap">
+<style>
+.cv{position:relative;width:960px;height:300px;background:var(--bg);overflow:hidden;font-family:var(--font-sans)}
+.cv svg{position:absolute;left:480px;top:0}
+.txt{position:absolute;left:40px;bottom:34px;max-width:440px}
+.nm{font-size:112px;line-height:.95;font-weight:600;letter-spacing:-0.03em;color:var(--ink);margin:0}
+.tg{font-size:13px;line-height:19px;color:var(--muted);margin:14px 0 0}
+.b-primary{fill:var(--primary)}.b-soft{fill:var(--soft)}.b-halo{fill:var(--halo)}.b-surface{fill:var(--surface);stroke:var(--line);stroke-width:1}.b-ink{fill:var(--ink)}
+.s-primary{stroke:var(--primary);stroke-width:16;stroke-linejoin:round;stroke-linecap:round}
+</style>
+<div class="cv">
+<svg width="480" height="300" viewBox="0 0 480 300" aria-hidden="true">
+<!--
+blocks: surface card 264x252 radius-card 16 bleeding off the top, soft pill 152x76, primary disc r 38, halo pill 112x44
+arrangement: one white card slab with green satellites, like the white summary card on the warm ground
+pattern row: literal motif, an open book drawn as two half pages from radius-pill arcs, because the mark and the app are a daily open book
+steps and radii: gutter 22 and space-6 24 for spacing, radius-card 16 on the slab, radius-pill on pills and disc
+-->
+<rect class="b-surface" x="22" y="-16" width="264" height="252" rx="16"/>
+<path class="b-soft s-primary" d="M154 70c-30-16-68-20-100-14v150c32-6 70-2 100 14z"/>
+<path class="b-soft s-primary" d="M154 70c30-16 68-20 100-14v150c-32-6-70-2-100 14z"/>
+<rect class="b-soft" x="310" y="24" width="152" height="76" rx="38"/>
+<circle class="b-primary" cx="348" cy="160" r="38"/>
+<rect class="b-halo" x="398" y="138" width="64" height="44" rx="22"/>
+<rect class="b-primary" x="310" y="226" width="112" height="44" rx="22"/>
+</svg>
+<div class="txt"><p class="nm">Manna</p><p class="tg">A little Bible every day.</p></div>
+</div>
+<script></script>
