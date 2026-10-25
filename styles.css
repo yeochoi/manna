@@ -43,7 +43,8 @@ a { color: var(--green-text); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
-.screen { flex: 1; padding-bottom: 96px; }
+/* Room for the tab bar, the iPhone home bar area and a clear 32 gap above the tabs. */
+.screen { flex: 1; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px); }
 .screen.no-tabs { padding-bottom: 40px; }
 
 /* Header */
