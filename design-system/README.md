@@ -1,10 +1,10 @@
 # Manna
 
-A little Bible every day. Manna picks up where you left off, gives you a few chapters a day, and lets AI write a short, easy summary and one key message for each reading. It runs as a responsive web app on phones and laptops, in Korean with 개역한글 and in English with the World English Bible.
+A little Bible every day. Manna picks up where you left off, gives you a few chapters a day, and lets AI write a short, easy summary and one key message for each reading. It runs as a responsive web app on phones and laptops, in Korean with the Korean Revised Version and in English with the World English Bible.
 
 ## Principles
 
-1. **One reading per day.** Today answers one question, what do I read today. The title is the range, like 사무엘상 24~26장. Everything else sits below it.
+1. **One reading per day.** Today answers one question, what do I read today. The title is the range, like 1 Samuel 24–26. Everything else sits below it.
 2. **Summary first, passage on request.** The easy summary is open. The full passage waits in a card you open, so the screen never starts as a wall of text.
 3. **Green means done and go.** Green is for actions, finished days and progress. Coral only appears when something failed.
 4. **Calm, warm, quiet.** Warm white ground, sage for selection, one green. Few boxes. Glass only on controls that float over content.
@@ -14,8 +14,8 @@ A little Bible every day. Manna picks up where you left off, gives you a few cha
 
 - Plain words, sentence case, short. No colons, semicolons or dashes in UI text.
 - Korean is the first language. English follows the same structure.
-- The summary language follows the translation. 개역한글 gives a Korean summary, WEB an English one.
-- Ranges read naturally, like 사무엘상 24~26장 or 1 Samuel 24–26.
+- The summary language follows the translation. The Korean Revised Version gives a Korean summary, WEB an English one.
+- Ranges read naturally, like 1 Samuel 24–26 or 1 Samuel 24–26.
 - The key message is one sentence about how to live, never a sermon.
 - Verses are quoted from local data, never from the AI. The AI only points to which verse.
 
