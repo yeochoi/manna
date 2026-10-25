@@ -2,10 +2,10 @@
   "use strict";
 
   // ---------- Text ----------
-  var LANG = "ko";
-  var S = window.STRINGS[LANG];
+  var S = window.STRINGS.ko;
   function t(key, vars) {
     var s = S[key];
+    if (s == null) s = window.STRINGS.ko[key];
     if (s == null) return key;
     if (vars) Object.keys(vars).forEach(function (k) { s = s.split("{" + k + "}").join(vars[k]); });
     return s;
@@ -20,23 +20,34 @@
   var STORE = "manna.v1";
   var KEY_STORE = "manna.apiKey";
   var MODELS = { haiku: "claude-haiku-5-5", sonnet: "claude-sonnet-5-5" };
-  var defaults = {
-    settings: { perDay: 3, mode: "together", fontSize: 17, model: MODELS.haiku, lang: "ko" },
-    bookmark: null,
-    log: {},
-    summaries: {}
-  };
+  var TRANSLATIONS = { krv: { lang: "ko", label: "trKrv" }, web: { lang: "en", label: "trWeb" } };
+  var phoneKo = /^ko/i.test((navigator.languages && navigator.languages[0]) || navigator.language || "");
+  function freshDefaults() {
+    return {
+      settings: { perDay: 3, mode: "together", fontSize: 17, model: MODELS.haiku, lang: phoneKo ? "ko" : "en", translation: phoneKo ? "krv" : "web" },
+      bookmark: null,
+      log: {},
+      summaries: {}
+    };
+  }
+  function normalize(d) {
+    var base = freshDefaults();
+    var s = d.settings || {};
+    // Older saves had no translation. Match it to their language.
+    if (!s.translation) s.translation = s.lang === "en" ? "web" : (s.lang ? "krv" : base.settings.translation);
+    return {
+      settings: Object.assign({}, base.settings, s),
+      bookmark: d.bookmark || null,
+      log: d.log || {},
+      summaries: d.summaries || {}
+    };
+  }
   function load() {
     try {
       var raw = localStorage.getItem(STORE);
-      if (!raw) return JSON.parse(JSON.stringify(defaults));
-      var d = JSON.parse(raw);
-      d.settings = Object.assign({}, defaults.settings, d.settings || {});
-      d.log = d.log || {};
-      d.summaries = d.summaries || {};
-      return d;
+      return raw ? normalize(JSON.parse(raw)) : freshDefaults();
     } catch (e) {
-      return JSON.parse(JSON.stringify(defaults));
+      return freshDefaults();
     }
   }
   var db = load();
@@ -46,6 +57,13 @@
   function getKey() { try { return localStorage.getItem(KEY_STORE) || ""; } catch (e) { return ""; } }
   function setKey(k) { try { k ? localStorage.setItem(KEY_STORE, k) : localStorage.removeItem(KEY_STORE); } catch (e) {} }
 
+  function applyLang() {
+    S = window.STRINGS[db.settings.lang] || window.STRINGS.ko;
+    document.documentElement.lang = db.settings.lang;
+  }
+  function trLang(tr) { return (TRANSLATIONS[tr] || TRANSLATIONS.krv).lang; }
+  function trName(tr) { return t((TRANSLATIONS[tr] || TRANSLATIONS.krv).label); }
+
   // ---------- Dates ----------
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function dateKey(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
@@ -54,6 +72,9 @@
   function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
   function longDate(d) {
     return new Intl.DateTimeFormat(S.locale, { month: "long", day: "numeric", weekday: "long" }).format(d);
+  }
+  function monthName(y, m) {
+    return new Intl.DateTimeFormat(S.locale, { month: "long" }).format(new Date(y, m, 1));
   }
 
   function streak() {
@@ -67,13 +88,15 @@
   // ---------- Bible data ----------
   var books = [];
   var bookCache = {};
-  function bookName(id) { var b = books[id - 1]; return b ? (LANG === "ko" ? b.ko : b.en) : ""; }
+  function nameIn(id, lang) { var b = books[id - 1]; return b ? (lang === "ko" ? b.ko : b.en) : ""; }
+  function bookName(id) { return nameIn(id, db.settings.lang); }
   function fetchJSON(url) {
     return fetch(url).then(function (r) { if (!r.ok) throw new Error(url); return r.json(); });
   }
-  function loadBook(id) {
-    if (bookCache[id]) return Promise.resolve(bookCache[id]);
-    return fetchJSON("data/krv/" + pad(id) + ".json").then(function (d) { bookCache[id] = d; return d; });
+  function loadBook(id, tr) {
+    var k = tr + id;
+    if (bookCache[k]) return Promise.resolve(bookCache[k]);
+    return fetchJSON("data/" + tr + "/" + pad(id) + ".json").then(function (d) { bookCache[k] = d; return d; });
   }
   function nextChapter(b, c) {
     if (c < books[b - 1].chapters) return [b, c + 1];
@@ -89,6 +112,7 @@
     }
     return out;
   }
+  function chapterLabel(b, c) { return t("rangeOne", { b: bookName(b), c: c }); }
   function rangeLabel(chs) {
     var groups = [];
     chs.forEach(function (x) {
@@ -97,18 +121,21 @@
       else groups.push({ b: x[0], from: x[1], to: x[1] });
     });
     return groups.map(function (g) {
-      return bookName(g.b) + " " + (g.from === g.to ? g.from : g.from + "~" + g.to) + "장";
-    }).join(" · ");
+      return g.from === g.to ? chapterLabel(g.b, g.from) : t("rangeMany", { b: bookName(g.b), from: g.from, to: g.to });
+    }).join(t("rangeJoin"));
   }
-  function rangeKey(chs, mode) { return mode + "|" + chs.map(function (x) { return x.join(":"); }).join(","); }
-  function loadChapters(chs) {
+  // Korean keys keep their original shape so earlier saves still match.
+  function rangeKey(chs, mode, tr) {
+    return mode + (tr && tr !== "krv" ? "|" + tr : "") + "|" + chs.map(function (x) { return x.join(":"); }).join(",");
+  }
+  function loadChapters(chs, tr) {
     var ids = [];
     chs.forEach(function (x) { if (ids.indexOf(x[0]) < 0) ids.push(x[0]); });
-    return Promise.all(ids.map(loadBook));
+    return Promise.all(ids.map(function (id) { return loadBook(id, tr); }));
   }
-  function sections(chs) {
+  function sections(chs, tr) {
     return chs.map(function (x) {
-      return { bookName: bookName(x[0]), book: x[0], chapter: x[1], verses: bookCache[x[0]].chapters[x[1] - 1] };
+      return { bookName: nameIn(x[0], trLang(tr)), book: x[0], chapter: x[1], verses: bookCache[tr + x[0]].chapters[x[1] - 1] };
     });
   }
 
@@ -137,60 +164,61 @@
   function renderTabs(active) {
     if (!active) { tabs.style.display = "none"; return; }
     tabs.style.display = "";
+    tabs.setAttribute("aria-label", t("menu"));
     tabs.innerHTML = '<div class="inner">' +
       '<a href="#/today"' + (active === "today" ? ' aria-current="page"' : "") + ">" + icons.book + "<span>" + esc(t("tabToday")) + "</span></a>" +
       '<a href="#/record"' + (active === "record" ? ' aria-current="page"' : "") + ">" + icons.cal + "<span>" + esc(t("tabRecord")) + "</span></a></div>";
   }
   function applyFont() { document.documentElement.style.setProperty("--reading-size", db.settings.fontSize + "px"); }
+  function showLoadError() {
+    view.innerHTML = '<div class="content"><p class="warn" style="margin-top:40px">' + esc(t("loadError")) + "</p></div>";
+  }
 
   // ---------- Summary ----------
   var inflight = {};
   var failed = {};
-  function verseLookup(ref) {
+  function verseLookup(ref, tr) {
     var m = /^(.+?)\s*(\d+)\s*:\s*(\d+)/.exec(ref || "");
     if (!m) return null;
-    var name = m[1].trim(), c = +m[2], v = +m[3];
+    var name = m[1].trim().toLowerCase(), c = +m[2], v = +m[3];
     var id = 0;
-    books.forEach(function (b) { if (b.ko === name || b.en === name) id = b.id; });
-    if (!id || !bookCache[id]) return { label: ref, text: "" };
-    var ch = bookCache[id].chapters[c - 1];
-    return { label: t("verseRef", { c: c, v: v }), text: ch && ch[v - 1] ? ch[v - 1] : "", full: bookName(id) + " " + c + ":" + v };
+    books.forEach(function (b) { if (b.ko === m[1].trim() || b.en.toLowerCase() === name) id = b.id; });
+    if (!id || !bookCache[tr + id]) return { label: ref, text: "" };
+    var ch = bookCache[tr + id].chapters[c - 1];
+    return { label: t("verseRef", { c: c, v: v }), text: ch && ch[v - 1] ? ch[v - 1] : "" };
   }
-  function summaryHTML(data) {
-    var html = '<div class="summary">';
+  function pointsHTML(points) {
+    return '<ol class="points">' + (points || []).map(function (p, i) {
+      return '<li><span class="num">' + (i + 1) + "</span><span>" + esc(p) + "</span></li>";
+    }).join("") + "</ol>";
+  }
+  function summaryHTML(data, tr) {
+    var lang = trLang(tr);
+    var html = '<div class="summary" lang="' + lang + '">';
     if (data.chapters) {
-      data.chapters.forEach(function (c) {
-        html += '<div class="chapter-title">' + esc(c.title) + "</div>";
-        html += '<ol class="points">' + (c.points || []).map(function (p, i) {
-          return '<li><span class="num">' + (i + 1) + "</span><span>" + esc(p) + "</span></li>";
-        }).join("") + "</ol>";
-      });
+      data.chapters.forEach(function (c) { html += '<div class="chapter-title">' + esc(c.title) + "</div>" + pointsHTML(c.points); });
     } else {
-      html += '<ol class="points">' + (data.points || []).map(function (p, i) {
-        return '<li><span class="num">' + (i + 1) + "</span><span>" + esc(p) + "</span></li>";
-      }).join("") + "</ol>";
+      html += pointsHTML(data.points);
     }
-    var kv = verseLookup(data.key_verse);
+    var kv = verseLookup(data.key_verse, tr);
     if (kv) {
-      html += '<div class="divider"></div><div><div class="verse-label">' + esc(t("keyVerse")) + " · " + esc(kv.label) + "</div>" +
+      html += '<div class="divider"></div><div><div class="verse-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyVerse")) + " · " + esc(kv.label) + "</div>" +
         (kv.text ? '<div class="verse-text">' + esc(kv.text) + "</div>" : "") + "</div>";
     }
-    html += '<div class="message"><span class="message-label">' + esc(t("keyMessage")) + '</span><span class="message-text">' + esc(data.message) + "</span></div>";
+    html += '<div class="message"><span class="message-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyMessage")) + '</span><span class="message-text">' + esc(data.message) + "</span></div>";
     return html + "</div>";
   }
-  function summaryBlock(chs, mode, opts) {
-    var key = rangeKey(chs, mode);
+  function skeleton() {
+    return '<div class="card pad"><div class="skeleton" role="status" aria-label="' + esc(t("summaryLoading")) + '"><span></span><span></span><span></span></div></div>';
+  }
+  function summaryBlock(chs, mode, tr, opts) {
+    var key = rangeKey(chs, mode, tr);
     var cached = db.summaries[key];
-    if (cached) return '<div class="card pad">' + summaryHTML(cached.data) + "</div>";
+    if (cached) return '<div class="card pad">' + summaryHTML(cached.data, tr) + "</div>";
     if (opts && opts.readOnly) return '<div class="note-box">' + esc(t("noSummarySaved")) + "</div>";
     var apiKey = getKey();
-    if (inflight[key]) {
-      return '<div class="card pad"><div class="skeleton" aria-label="' + esc(t("summaryLoading")) + '"><span></span><span></span><span></span></div></div>';
-    }
-    if (apiKey && !failed[key]) {
-      requestSummary(chs, mode);
-      return '<div class="card pad"><div class="skeleton" aria-label="' + esc(t("summaryLoading")) + '"><span></span><span></span><span></span></div></div>';
-    }
+    if (inflight[key]) return skeleton();
+    if (apiKey && !failed[key]) { requestSummary(chs, mode, tr); return skeleton(); }
     var html = '<div class="card pad" style="display:flex;flex-direction:column;gap:12px">';
     if (failed[key]) html += '<div class="warn">' + esc(t("summaryError", { msg: failed[key] })) + "</div>";
     else html += '<div class="note">' + esc(t("noKey")) + "</div>";
@@ -200,32 +228,32 @@
     html += '<button class="pill" type="button" data-act="copy">' + esc(t("copyPrompt")) + "</button></div></div>";
     return html;
   }
-  function requestSummary(chs, mode) {
-    var key = rangeKey(chs, mode);
+  function requestSummary(chs, mode, tr) {
+    var key = rangeKey(chs, mode, tr);
     inflight[key] = true;
     delete failed[key];
-    window.Summary.request(getKey(), db.settings.model, sections(chs), mode).then(function (data) {
+    window.Summary.request(getKey(), db.settings.model, sections(chs, tr), mode, trLang(tr)).then(function (data) {
       db.summaries[key] = { data: data, at: Date.now(), model: db.settings.model };
       save();
     }).catch(function (err) {
       failed[key] = err.message || String(err);
     }).then(function () {
       delete inflight[key];
-      refreshSummary(chs, mode);
+      refreshSummary(chs, mode, tr);
     });
   }
-  function refreshSummary(chs, mode) {
+  function refreshSummary(chs, mode, tr) {
     var slot = document.getElementById("summarySlot");
-    if (!slot || slot.getAttribute("data-key") !== rangeKey(chs, mode)) return;
-    slot.innerHTML = summaryBlock(chs, mode);
-    wireSummary(slot, chs, mode);
+    if (!slot || slot.getAttribute("data-key") !== rangeKey(chs, mode, tr)) return;
+    slot.innerHTML = summaryBlock(chs, mode, tr);
+    wireSummary(slot, chs, mode, tr);
   }
-  function wireSummary(slot, chs, mode) {
+  function wireSummary(slot, chs, mode, tr) {
     var r = slot.querySelector('[data-act="retry"]');
-    if (r) r.onclick = function () { delete failed[rangeKey(chs, mode)]; requestSummary(chs, mode); refreshSummary(chs, mode); };
+    if (r) r.onclick = function () { delete failed[rangeKey(chs, mode, tr)]; requestSummary(chs, mode, tr); refreshSummary(chs, mode, tr); };
     var c = slot.querySelector('[data-act="copy"]');
     if (c) c.onclick = function () {
-      var text = window.Summary.fullCopyText(sections(chs), mode);
+      var text = window.Summary.fullCopyText(sections(chs, tr), mode, trLang(tr));
       (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () {
         toast(t("copied"));
       }).catch(function () {
@@ -238,21 +266,20 @@
   }
 
   // ---------- Passage ----------
-  function passageHTML(chs) {
-    return sections(chs).map(function (s, i) {
-      return '<section class="chapter" id="ch-' + i + '"><div class="chapter-break"><span>' + esc(s.bookName + " " + t("chapterN", { n: s.chapter })) + "</span><i></i></div>" +
+  function passageHTML(chs, tr) {
+    return '<div lang="' + trLang(tr) + '">' + sections(chs, tr).map(function (s, i) {
+      return '<section class="chapter" id="ch-' + i + '"><div class="chapter-break"><span>' + esc(chapterLabel(s.book, s.chapter)) + "</span><i></i></div>" +
         s.verses.map(function (v, j) { return '<p class="verse"><sup>' + (j + 1) + "</sup>" + esc(v) + "</p>"; }).join("") + "</section>";
-    }).join("");
+    }).join("") + "</div>";
   }
 
   // Sticky bar with chapter progress while reading
   var scrollHandler = null;
   function setupReadingBar(chs) {
     teardownReadingBar();
-    var secs = sections(chs);
     bar.innerHTML = '<div class="inner"><div class="row"><span class="title" id="barTitle"></span><span class="note" id="barCount"></span></div>' +
       '<div class="progress" style="grid-template-columns:repeat(' + chs.length + ',minmax(0,1fr))">' +
-      chs.map(function () { return "<div><b style=\"width:0\"></b></div>"; }).join("") + "</div></div>";
+      chs.map(function () { return '<div><b style="width:0"></b></div>'; }).join("") + "</div></div>";
     var fills = bar.querySelectorAll(".progress b");
     var ticking = false;
     function update() {
@@ -270,7 +297,7 @@
         var p = (vh * 0.35 - r.top) / Math.max(1, r.height);
         fills[i].style.width = Math.max(0, Math.min(1, p)) * 100 + "%";
       }
-      document.getElementById("barTitle").textContent = secs[current].bookName + " " + t("chapterN", { n: secs[current].chapter });
+      document.getElementById("barTitle").textContent = chapterLabel(chs[current][0], chs[current][1]);
       document.getElementById("barCount").textContent = t("progress", { i: current + 1, n: chs.length });
     }
     scrollHandler = function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
@@ -286,6 +313,8 @@
 
   // ---------- Screens ----------
   var ui = { extra: false, month: null, selected: null, openPassage: {}, pickBook: null };
+  function onRoute(prefix) { var h = location.hash || "#/today"; return h.indexOf(prefix) === 0; }
+  function entryTr(e) { return e.tr || "krv"; }
 
   function streakChip() {
     var n = streak();
@@ -299,6 +328,7 @@
       '<a class="round" href="#/settings" aria-label="' + esc(t("settings")) + '">' + icons.gear + "</a></div>";
 
     if (!db.bookmark) {
+      teardownReadingBar();
       view.innerHTML = head + '<span class="top-label">' + esc(t("today") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(t("welcomeTitle")) + "</h1></header>" +
         '<div class="content"><p class="note" style="margin:20px 0 16px;font-size:15px;line-height:22px">' + esc(t("welcomeBody")) + "</p>" +
         '<div class="done-area" style="margin-top:0"><button class="btn" type="button" id="startGen">' + esc(t("startGenesis")) + "</button>" +
@@ -308,57 +338,61 @@
     }
 
     var entries = db.log[today] || [];
-    var doneMode = entries.length > 0 && !ui.extra;
     var mode = db.settings.mode;
+    var tr = db.settings.translation;
 
-    if (doneMode) {
+    if (entries.length > 0 && !ui.extra) {
       var last = entries[entries.length - 1];
       var allChs = [];
       entries.forEach(function (e) { allChs = allChs.concat(e.chapters); });
-      loadChapters(allChs).then(function () {
-        if (location.hash.indexOf("#/today") !== 0 && location.hash !== "" && location.hash !== "#") return;
+      var needs = entries.map(function (e) { return loadChapters(e.chapters, entryTr(e)); });
+      Promise.all(needs).then(function () {
+        if (!onRoute("#/today")) return;
         var html = head + '<span class="top-label">' + esc(t("doneToday") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(rangeLabel(allChs)) + "</h1></header>";
         html += '<div class="content">';
         entries.forEach(function (e, idx) {
-          var m = e.mode || mode;
+          var m = e.mode || "together";
+          var isLast = idx === entries.length - 1;
           html += '<div class="section">' + esc(entries.length > 1 ? rangeLabel(e.chapters) : t("summary")) + "</div>";
-          html += '<div id="' + (idx === entries.length - 1 ? "summarySlot" : "s" + idx) + '" data-key="' + esc(rangeKey(e.chapters, m)) + '">' + summaryBlock(e.chapters, m, { readOnly: idx !== entries.length - 1 }) + "</div>";
+          html += '<div id="' + (isLast ? "summarySlot" : "s" + idx) + '" data-key="' + esc(rangeKey(e.chapters, m, entryTr(e))) + '">' + summaryBlock(e.chapters, m, entryTr(e), { readOnly: !isLast }) + "</div>";
         });
         html += '<button class="link-btn" type="button" id="togglePassage">' + esc(ui.openPassage.today ? t("hidePassage") : t("showPassage")) + "</button>";
-        if (ui.openPassage.today) html += '<div class="card passage-card">' + passageHTML(allChs) + "</div>";
+        if (ui.openPassage.today) {
+          entries.forEach(function (e) { html += '<div class="card passage-card" style="margin-bottom:12px">' + passageHTML(e.chapters, entryTr(e)) + "</div>"; });
+        }
         html += '<div class="done-area"><button class="btn secondary" type="button" id="readMore">' + esc(t("readMore", { n: db.settings.perDay })) + "</button></div></div>";
         view.innerHTML = html;
         teardownReadingBar();
         var slot = document.getElementById("summarySlot");
-        if (slot) wireSummary(slot, last.chapters, last.mode || mode);
+        if (slot) wireSummary(slot, last.chapters, last.mode || "together", entryTr(last));
         document.getElementById("togglePassage").onclick = function () { ui.openPassage.today = !ui.openPassage.today; renderToday(); };
         document.getElementById("readMore").onclick = function () { ui.extra = true; window.scrollTo(0, 0); renderToday(); };
-      });
+      }).catch(showLoadError);
       return;
     }
 
     var chs = upcoming(db.settings.perDay);
-    loadChapters(chs).then(function () {
-      if (location.hash.indexOf("#/today") !== 0 && location.hash !== "" && location.hash !== "#") return;
+    loadChapters(chs, tr).then(function () {
+      if (!onRoute("#/today")) return;
       var html = head + '<span class="top-label">' + esc(t("today") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(rangeLabel(chs)) + "</h1></header>";
       html += '<div class="content"><div class="section">' + esc(t("summary")) + "</div>";
-      html += '<div id="summarySlot" data-key="' + esc(rangeKey(chs, mode)) + '">' + summaryBlock(chs, mode) + "</div>";
+      html += '<div id="summarySlot" data-key="' + esc(rangeKey(chs, mode, tr)) + '">' + summaryBlock(chs, mode, tr) + "</div>";
       html += '<p class="note" style="margin-top:8px">' + esc(t("summaryNote")) + "</p>";
-      html += '<div class="section" style="margin-top:28px">' + esc(t("passage")) + "</div>";
-      html += '<div class="card passage-card">' + passageHTML(chs) + "</div>";
+      html += '<div class="section" style="margin-top:28px">' + esc(t("passage", { tr: trName(tr) })) + "</div>";
+      html += '<div class="card passage-card">' + passageHTML(chs, tr) + "</div>";
       html += '<div class="done-area"><button class="btn" type="button" id="done">' + esc(t("doneReading")) + "</button></div></div>";
       view.innerHTML = html;
-      wireSummary(document.getElementById("summarySlot"), chs, mode);
+      wireSummary(document.getElementById("summarySlot"), chs, mode, tr);
       setupReadingBar(chs);
-      document.getElementById("done").onclick = function () { markRead(chs, mode); };
-    });
+      document.getElementById("done").onclick = function () { markRead(chs, mode, tr); };
+    }).catch(showLoadError);
   }
 
-  function markRead(chs, mode) {
+  function markRead(chs, mode, tr) {
     var today = todayKey();
     var prevBookmark = db.bookmark ? { b: db.bookmark.b, c: db.bookmark.c } : null;
     db.log[today] = db.log[today] || [];
-    db.log[today].push({ chapters: chs, mode: mode, at: Date.now() });
+    db.log[today].push({ chapters: chs, mode: mode, tr: tr, at: Date.now() });
     var lastCh = chs[chs.length - 1];
     db.bookmark = { b: lastCh[0], c: lastCh[1] };
     save();
@@ -393,7 +427,7 @@
       '<div class="stats"><div class="stat"><b>' + esc(t("days", { n: streak() })) + "</b><span>" + esc(t("streakLabel")) + '</span></div><div class="stat-sep"></div>' +
       '<div class="stat"><b>' + esc(t("days", { n: monthCount })) + "</b><span>" + esc(t("monthLabel")) + "</span></div></div></header>";
     html += '<div class="content"><div class="cal-head"><button class="round small" type="button" id="prevM" aria-label="' + esc(t("prevMonth")) + '">' + icons.left + "</button>" +
-      "<span>" + esc(t("monthTitle", { y: y, m: m + 1 })) + '</span><button class="round small" type="button" id="nextM" aria-label="' + esc(t("nextMonth")) + '">' + icons.right + "</button></div>";
+      "<span>" + esc(t("monthTitle", { y: y, m: m + 1, month: monthName(y, m) })) + '</span><button class="round small" type="button" id="nextM" aria-label="' + esc(t("nextMonth")) + '">' + icons.right + "</button></div>";
     html += '<div class="card cal"><div class="cal-grid">' + S.weekdays.map(function (w) { return '<div class="cal-week">' + esc(w) + "</div>"; }).join("") + "</div>";
     html += '<div class="cal-grid">';
     for (var i = 0; i < first.getDay(); i++) html += '<div class="cal-cell"></div>';
@@ -409,28 +443,21 @@
     }
     html += "</div></div>";
 
-    var selDate = parseKey(sel);
-    html += '<div class="section">' + esc(longDate(selDate)) + "</div>";
+    html += '<div class="section">' + esc(longDate(parseKey(sel))) + "</div>";
     var entries = db.log[sel] || [];
     if (!entries.length) {
-      html += '<p class="note">' + esc(t("nothingThatDay")) + "</p>";
-      view.innerHTML = html + "</div>";
+      view.innerHTML = html + '<p class="note">' + esc(t("nothingThatDay")) + "</p></div>";
       wireCalendar();
       return;
     }
-    var allChs = [];
-    entries.forEach(function (e) { allChs = allChs.concat(e.chapters); });
-    loadChapters(allChs).then(function () {
-      if (location.hash.indexOf("#/record") !== 0) return;
-      html += '<div class="card">' + entries.map(function (e) {
-        var s = db.summaries[rangeKey(e.chapters, e.mode || "together")];
-        var sub = s ? (s.data.message || "") : "";
-        return '<a class="row-item" href="#/day/' + sel + '"><span class="row-stack"><span style="font-size:17px;font-weight:600">' + esc(rangeLabel(e.chapters)) + "</span>" +
-          (sub ? '<span class="sub">' + esc(sub.length > 40 ? sub.slice(0, 40) + "…" : sub) + "</span>" : "") + "</span>" + icons.chev + "</a>";
-      }).join("") + "</div></div>";
-      view.innerHTML = html;
-      wireCalendar();
-    });
+    html += '<div class="card">' + entries.map(function (e) {
+      var s = db.summaries[rangeKey(e.chapters, e.mode || "together", entryTr(e))];
+      var sub = s ? (s.data.message || "") : "";
+      return '<a class="row-item" href="#/day/' + sel + '"><span class="row-stack"><span style="font-size:17px;font-weight:600">' + esc(rangeLabel(e.chapters)) + "</span>" +
+        (sub ? '<span class="sub" lang="' + trLang(entryTr(e)) + '">' + esc(sub.length > 60 ? sub.slice(0, 60) + "…" : sub) + "</span>" : "") + "</span>" + icons.chev + "</a>";
+    }).join("") + "</div></div>";
+    view.innerHTML = html;
+    wireCalendar();
   }
   function wireCalendar() {
     document.getElementById("prevM").onclick = function () {
@@ -449,68 +476,71 @@
   function renderDay(key) {
     renderTabs(null);
     teardownReadingBar();
+    view.className = "screen no-tabs";
     var entries = db.log[key] || [];
     var allChs = [];
     entries.forEach(function (e) { allChs = allChs.concat(e.chapters); });
-    loadChapters(allChs).then(function () {
+    Promise.all(entries.map(function (e) { return loadChapters(e.chapters, entryTr(e)); })).then(function () {
+      if (!onRoute("#/day/")) return;
       var html = '<div class="bar"><a class="round small" href="#/record" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(longDate(parseKey(key))) + "</span><span></span></div>";
       html += '<div class="content">';
       if (!entries.length) {
-        html += '<p class="note" style="margin-top:20px">' + esc(t("nothingThatDay")) + "</p></div>";
-        view.innerHTML = html;
-        view.className = "screen no-tabs";
+        view.innerHTML = html + '<p class="note" style="margin-top:20px">' + esc(t("nothingThatDay")) + "</p></div>";
         return;
       }
       html += '<h1 class="answer" style="margin-top:20px">' + esc(rangeLabel(allChs)) + "</h1>";
       entries.forEach(function (e, i) {
         html += '<div class="section">' + esc(entries.length > 1 ? rangeLabel(e.chapters) : t("summary")) + "</div>";
-        html += summaryBlock(e.chapters, e.mode || "together", { readOnly: true });
+        html += summaryBlock(e.chapters, e.mode || "together", entryTr(e), { readOnly: true });
         var open = ui.openPassage[key + i];
         html += '<button class="link-btn" type="button" data-toggle="' + i + '">' + esc(open ? t("hidePassage") : t("showPassage")) + "</button>";
-        if (open) html += '<div class="card passage-card">' + passageHTML(e.chapters) + "</div>";
+        if (open) html += '<div class="card passage-card">' + passageHTML(e.chapters, entryTr(e)) + "</div>";
       });
       view.innerHTML = html + "</div>";
-      view.className = "screen no-tabs";
       Array.prototype.forEach.call(view.querySelectorAll("[data-toggle]"), function (b) {
         b.onclick = function () { var i = b.getAttribute("data-toggle"); ui.openPassage[key + i] = !ui.openPassage[key + i]; renderDay(key); };
       });
-    });
+    }).catch(showLoadError);
   }
 
-  function segHTML(name, options, value) {
-    return '<div class="seg" role="group" style="grid-template-columns:repeat(' + options.length + ',minmax(0,1fr))">' +
+  function segHTML(name, options, value, label) {
+    return '<div class="seg" role="group" aria-label="' + esc(label) + '" style="grid-template-columns:repeat(' + options.length + ',minmax(0,1fr))">' +
       options.map(function (o) {
-        return '<button type="button" data-seg="' + name + '" data-val="' + esc(o.v) + '" aria-pressed="' + (String(o.v) === String(value)) + '">' + esc(o.l) + "</button>";
+        return '<button type="button" data-seg="' + name + '" data-val="' + esc(o.v) + '" aria-pressed="' + (String(o.v) === String(value)) + '"' + (o.lang ? ' lang="' + o.lang + '"' : "") + ">" + esc(o.l) + "</button>";
       }).join("") + "</div>";
   }
 
   function renderSettings() {
     renderTabs(null);
     teardownReadingBar();
+    view.className = "screen no-tabs";
     var s = db.settings;
     var key = getKey();
-    var bm = db.bookmark && db.bookmark.c > 0 ? bookName(db.bookmark.b) + " " + t("chapterN", { n: db.bookmark.c }) : t("notSet");
+    var bm = db.bookmark && db.bookmark.c > 0 ? chapterLabel(db.bookmark.b, db.bookmark.c) : t("notSet");
     var html = '<div class="bar"><a class="round small" href="#/today" aria-label="' + esc(t("close")) + '">' + icons.x + '</a><span class="bar-title">' + esc(t("settings")) + "</span><span></span></div>";
     html += '<div class="content">';
 
     html += '<div class="section">' + esc(t("reading")) + '</div><div class="card">' +
-      '<div class="block"><span>' + esc(t("perDay")) + "</span>" + segHTML("perDay", [1, 2, 3, 4, 5].map(function (n) { return { v: n, l: t("chapters", { n: n }) }; }), s.perDay) + "</div>" +
+      '<div class="block"><span>' + esc(t("perDay")) + "</span>" + segHTML("perDay", [1, 2, 3, 4, 5].map(function (n) { return { v: n, l: t("chapters", { n: n }) }; }), s.perDay, t("perDay")) + "</div>" +
       '<a class="row-item" href="#/pick"><span>' + esc(t("lastRead")) + '</span><span class="row-value">' + esc(bm) + icons.chev + "</span></a>" +
-      '<div class="row-item"><span>' + esc(t("translation")) + '</span><span class="row-value">' + esc(t("krv")) + "</span></div></div>";
+      '<div class="block"><span>' + esc(t("translation")) + "</span>" + segHTML("translation", [{ v: "krv", l: t("trKrv"), lang: "ko" }, { v: "web", l: t("trWeb"), lang: "en" }], s.translation, t("translation")) +
+      '<p class="note" style="margin:0">' + esc(t("translationHint")) + "</p></div></div>";
 
     html += '<div class="section">' + esc(t("summarySection")) + '</div><div class="card"><div class="block"><span>' + esc(t("summaryMode")) + "</span>" +
-      segHTML("mode", [{ v: "together", l: t("modeTogether") }, { v: "each", l: t("modeEach") }], s.mode) + "</div></div>";
+      segHTML("mode", [{ v: "together", l: t("modeTogether") }, { v: "each", l: t("modeEach") }], s.mode, t("summaryMode")) + "</div></div>";
 
-    html += '<div class="section">' + esc(t("view")) + '</div><div class="card"><div class="block"><div style="display:flex;justify-content:space-between;align-items:center"><label for="fontSize">' + esc(t("fontSize")) + '</label><span class="row-value" id="fontVal">' + s.fontSize + "</span></div>" +
+    html += '<div class="section">' + esc(t("view")) + '</div><div class="card">' +
+      '<div class="block"><span>' + esc(t("language")) + "</span>" + segHTML("lang", [{ v: "ko", l: "한국어", lang: "ko" }, { v: "en", l: "English", lang: "en" }], s.lang, t("language")) + "</div>" +
+      '<div class="block"><div style="display:flex;justify-content:space-between;align-items:center"><label for="fontSize">' + esc(t("fontSize")) + '</label><span class="row-value" id="fontVal">' + s.fontSize + "</span></div>" +
       '<input type="range" id="fontSize" min="15" max="22" step="1" value="' + s.fontSize + '">' +
-      '<p class="verse" id="fontSample" style="margin:0">' + esc("태초에 하나님이 천지를 창조하시니라") + "</p></div></div>";
+      '<p class="verse" style="margin:0" lang="' + trLang(s.translation) + '">' + esc(s.translation === "web" ? window.STRINGS.en.fontSample : window.STRINGS.ko.fontSample) + "</p></div></div>";
 
     html += '<div class="section">' + esc(t("aiSection")) + '</div><div class="card"><div class="block"><label for="apiKey">' + esc(t("apiKey")) + "</label>" +
       '<input class="field" id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="' + esc(t("apiKeyPlaceholder")) + '" value="' + esc(key) + '">' +
       '<div class="btn-row"><button class="pill" type="button" id="saveKey">' + esc(t("saveKey")) + "</button>" +
       (key ? '<button class="pill" type="button" id="removeKey">' + esc(t("removeKey")) + "</button>" : "") + "</div>" +
       '<p class="note" style="margin:0">' + esc(t("apiKeyHint")) + "</p></div>" +
-      '<div class="block"><span>' + esc(t("model")) + "</span>" + segHTML("model", [{ v: MODELS.haiku, l: t("modelHaiku") }, { v: MODELS.sonnet, l: t("modelSonnet") }], s.model) +
+      '<div class="block"><span>' + esc(t("model")) + "</span>" + segHTML("model", [{ v: MODELS.haiku, l: t("modelHaiku") }, { v: MODELS.sonnet, l: t("modelSonnet") }], s.model, t("model")) +
       '<p class="note" style="margin:0">' + esc(t("modelHint")) + "</p></div></div>";
 
     html += '<div class="section">' + esc(t("backup")) + '</div><div class="card">' +
@@ -521,13 +551,13 @@
 
     html += '<div class="note-box" style="margin-top:24px">' + esc(t("source")) + "</div></div>";
     view.innerHTML = html;
-    view.className = "screen no-tabs";
 
     Array.prototype.forEach.call(view.querySelectorAll("[data-seg]"), function (b) {
       b.onclick = function () {
         var name = b.getAttribute("data-seg"), val = b.getAttribute("data-val");
         db.settings[name] = name === "perDay" ? Number(val) : val;
         save();
+        if (name === "lang") applyLang();
         renderSettings();
       };
     });
@@ -570,13 +600,9 @@
         var json = JSON.parse(reader.result);
         var d = json && (json.app === "manna" || json.app === "daily-chapters") ? json.data : null;
         if (!d || typeof d.log !== "object") throw new Error("bad");
-        db = {
-          settings: Object.assign({}, defaults.settings, d.settings || {}),
-          bookmark: d.bookmark || null,
-          log: d.log || {},
-          summaries: d.summaries || {}
-        };
+        db = normalize(d);
         save();
+        applyLang();
         applyFont();
         toast(t("imported"));
         renderSettings();
@@ -590,8 +616,9 @@
   function renderPick() {
     renderTabs(null);
     teardownReadingBar();
+    view.className = "screen no-tabs";
     var cur = db.bookmark && db.bookmark.c > 0 ? db.bookmark : null;
-    var html = '<div class="bar"><a class="round small" href="#/settings" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(t("pickTitle")) + "</span><span></span></div><div class=\"content\">";
+    var html = '<div class="bar"><a class="round small" href="#/settings" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(t("pickTitle")) + '</span><span></span></div><div class="content">';
     function grid(from, to) {
       var g = '<div class="book-grid">';
       for (var i = from; i <= to; i++) g += '<button type="button" data-book="' + i + '" aria-pressed="' + (ui.pickBook === i) + '">' + esc(bookName(i)) + "</button>";
@@ -604,12 +631,11 @@
         var on = cur && cur.b === b && cur.c === c;
         html += '<button type="button" data-ch="' + c + '" aria-pressed="' + !!on + '">' + c + "</button>";
       }
-      html += '</div><button class="link-btn" type="button" id="otherBook">' + esc(t("pickTitle")) + " · " + esc(t("oldTestament")) + " / " + esc(t("newTestament")) + "</button>";
+      html += '</div><button class="link-btn" type="button" id="otherBook">' + esc(t("allBooks")) + "</button>";
     } else {
       html += '<div class="section">' + esc(t("oldTestament")) + "</div>" + grid(1, 39) + '<div class="section">' + esc(t("newTestament")) + "</div>" + grid(40, 66);
     }
     view.innerHTML = html + "</div>";
-    view.className = "screen no-tabs";
     Array.prototype.forEach.call(view.querySelectorAll("[data-book]"), function (btn) {
       btn.onclick = function () { ui.pickBook = Number(btn.getAttribute("data-book")); renderPick(); window.scrollTo(0, 0); };
     });
@@ -623,11 +649,12 @@
       };
     });
     var ob = document.getElementById("otherBook");
-    if (ob) ob.onclick = function () { ui.pickBook = 0; renderPick(); };
+    if (ob) ob.onclick = function () { ui.pickBook = 0; renderPick(); window.scrollTo(0, 0); };
   }
 
   // ---------- Router ----------
   function render() {
+    applyLang();
     applyFont();
     view.className = "screen";
     var h = location.hash || "#/today";
@@ -657,10 +684,9 @@
     }
   });
 
+  applyLang();
   fetchJSON("data/books.json").then(function (b) {
     books = b;
     render();
-  }).catch(function () {
-    view.innerHTML = '<div class="content"><p class="warn" style="margin-top:40px">Could not load data.</p></div>';
-  });
+  }).catch(showLoadError);
 })();
