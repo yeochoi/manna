@@ -156,7 +156,7 @@
     flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-8z"/></svg>',
     left: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
     right: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>',
-    chev: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A9A5B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>',
+    chev: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C8899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>',
     x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     book: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M9 7h6"/></svg>',
     cal: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>'
@@ -556,7 +556,7 @@
     var s = db.settings;
     var key = getKey();
     var bm = db.bookmark && db.bookmark.c > 0 ? chapterLabel(db.bookmark.b, db.bookmark.c) : t("notSet");
-    var html = '<div class="bar narrow"><a class="round small" href="#/today" aria-label="' + esc(t("close")) + '">' + icons.x + '</a><span class="bar-title">' + esc(t("settings")) + "</span><span></span></div>";
+    var html = '<div class="bar narrow"><a class="round small" href="#/today" aria-label="' + esc(t("close")) + '">' + icons.x + '</a><h1 class="bar-title">' + esc(t("settings")) + "</h1><span></span></div>";
     html += '<div class="content narrow">';
 
     html += '<div class="section">' + esc(t("reading")) + '</div><div class="card">' +
@@ -585,7 +585,7 @@
     html += '<div class="section">' + esc(t("backup")) + '</div><div class="card">' +
       '<button class="row-item" type="button" id="exportBtn"><span>' + esc(t("exportData")) + "</span>" + icons.chev + "</button>" +
       '<button class="row-item" type="button" id="importBtn"><span>' + esc(t("importData")) + "</span>" + icons.chev + "</button></div>" +
-      '<input type="file" id="importFile" accept="application/json,.json" class="sr-only" tabindex="-1">' +
+      '<input type="file" id="importFile" accept="application/json,.json" class="sr-only" tabindex="-1" aria-label="' + esc(t("importData")) + '">' +
       '<p class="note" style="margin-top:8px">' + esc(t("backupHint")) + "</p>";
 
     html += '<div class="section">' + esc(t("resetSection")) + '</div><div class="card">';
@@ -692,7 +692,7 @@
     teardownReadingBar();
     view.className = "screen no-tabs";
     var cur = db.bookmark && db.bookmark.c > 0 ? db.bookmark : null;
-    var html = '<div class="bar narrow"><a class="round small" href="' + (db.bookmark ? "#/settings" : "#/today") + '" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><span class="bar-title">' + esc(t("pickTitle")) + '</span><span></span></div><div class="content narrow">';
+    var html = '<div class="bar narrow"><a class="round small" href="' + (db.bookmark ? "#/settings" : "#/today") + '" aria-label="' + esc(t("back")) + '">' + icons.left + '</a><h1 class="bar-title">' + esc(t("pickTitle")) + '</h1><span></span></div><div class="content narrow">';
     function grid(from, to) {
       var g = '<div class="book-grid">';
       for (var i = from; i <= to; i++) g += '<button type="button" data-book="' + i + '" aria-pressed="' + (ui.pickBook === i) + '">' + esc(bookName(i)) + "</button>";
