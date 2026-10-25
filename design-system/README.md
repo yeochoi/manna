@@ -64,6 +64,7 @@ Rules
 - Settings sits behind the round gear on Today.
 - Settings ends with About, where Design system opens this system inside the app, built from the app's own styles.
 - The passage opens in place inside its card. A long passage shows a slim bar at the top with the range and progress while you read.
+- Once you are a screen into an open passage, a round back to top button appears bottom right, above the tabs, near the thumb. It is `surface` with a `line` border and a `green-text` chevron, 48 wide. Tapping it scrolls to the top and moves focus to the page title.
 
 ## Iconography
 

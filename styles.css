@@ -369,3 +369,17 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
 .ds-demo { padding: 20px 16px 24px; }
 .ds-demo .round { width: 44px; height: 44px; }
 .ds-btn { display: flex; align-items: center; justify-content: center; }
+
+/* Back to top. A round button near the thumb, only while reading a long passage. */
+.to-top {
+  position: fixed; right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); z-index: 15;
+  width: 48px; height: 48px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--green-text); display: flex; align-items: center; justify-content: center; padding: 0;
+  box-shadow: 0 2px 8px rgba(28, 33, 30, 0.12);
+}
+.to-top[hidden] { display: none; }
+.to-top:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@media (min-width: 900px) {
+  .to-top { bottom: 32px; right: max(var(--gutter), calc((100% - var(--max)) / 2 + var(--gutter))); }
+  .to-top:hover { background: #FBFAF8; }
+}

@@ -143,6 +143,7 @@
   var view = document.getElementById("view");
   var tabs = document.getElementById("tabs");
   var bar = document.getElementById("readingBar");
+  var toTop = document.getElementById("toTop");
   var toastEl = document.getElementById("toast");
   var toastTimer;
   function toast(msg, actionLabel, action) {
@@ -307,7 +308,7 @@
       var top = document.querySelector(".top");
       var show = top && top.getBoundingClientRect().bottom < 0;
       bar.classList.toggle("show", !!show);
-      bar.setAttribute("aria-hidden", show ? "false" : "true");
+      // The bar repeats the chapter headings in the passage, so screen readers skip it.
       var vh = window.innerHeight, current = 0;
       for (var i = 0; i < chs.length; i++) {
         var el = document.getElementById("ch-" + i);
@@ -333,6 +334,26 @@
     bar.classList.remove("show");
     bar.setAttribute("aria-hidden", "true");
   }
+  // Back to top. Shows near the thumb once you are a screen into an open passage, on any page.
+  function updateToTop() {
+    var reading = !!view.querySelector(".verse");
+    var show = reading && window.scrollY > window.innerHeight * 0.9;
+    if (toTop.hidden === show) {
+      toTop.hidden = !show;
+      toTop.setAttribute("aria-label", t("toTop"));
+    }
+  }
+  var topTicking = false;
+  window.addEventListener("scroll", function () {
+    if (!topTicking) { topTicking = true; requestAnimationFrame(function () { topTicking = false; updateToTop(); }); }
+  }, { passive: true });
+  toTop.onclick = function () {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    // Move focus to the page title so keyboard and screen reader users land at the top too.
+    var title = view.querySelector(".answer, .page-title, h1");
+    if (title) { title.setAttribute("tabindex", "-1"); title.focus({ preventScroll: true }); }
+  };
 
   // Expands in place: a card row with a chevron down, opening inside the same card.
   function disclosure(id, label, open, inner) {
@@ -817,6 +838,7 @@
     return renderToday();
   }
   window.addEventListener("hashchange", function () {
+    toTop.hidden = true;
     if (location.hash.indexOf("#/pick") !== 0) ui.pickBook = null;
     if (location.hash.indexOf("#/settings") !== 0) ui.resetOpen = false;
     if (toastEl.querySelector("button")) toastEl.innerHTML = "";
