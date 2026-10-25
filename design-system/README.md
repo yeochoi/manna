@@ -55,6 +55,7 @@ Rules
 - Phones use a 22 side margin. Laptops center content inside `max-width` 1040, with backgrounds running full width.
 - Today and a past day use two columns on laptops. The summary stays beside the passage while you read.
 - Sections start with a `title` header in ink. Content sits right on the ground: no header band, no boxes around the summary, passage or calendar. Sections are split by a 1px `line` hairline. Settings keep white cards with a 1px `line` border and `radius-card`, because grouped controls need a container.
+- A floating control never covers a button. Floating controls hide or move when a button reaches them.
 - Glass is only for things that float over content: the tab bar, the reading bar, round buttons and back to top. Glass is white at 72 percent, blur 20, saturate 1.6, a soft shadow and a 1px inner highlight.
 - On phones the tab bar is a floating glass pill, centered, 16 above the safe area. The current tab gets a `soft` sage pill at 90 percent with `green-text`. On laptops the tabs sit in a top bar on the ground with a light blur.
 - Every chevron is 16 in `chevron`. Right on a card that opens a page, down on a card that opens in place.
@@ -66,7 +67,7 @@ Rules
 - Settings sits behind the round gear on Today.
 - Settings ends with About, where Design system opens this system inside the app, built from the app's own styles.
 - The passage opens in place below its row. A long passage shows a floating glass bar at the top with the range and progress while you read.
-- Once you are a screen into an open passage, a round back to top button appears bottom right, above the tabs, near the thumb. It is glass with a `green-text` chevron, 48 wide. Tapping it scrolls to the top and moves focus to the page title.
+- Once you are a screen into an open passage, a round back to top button appears bottom right, above the tabs, near the thumb. It is glass with a `green-text` chevron, 48 wide. Tapping it scrolls to the top and moves focus to the page title. It hides whenever a main button is in the corner it floats over, like "I've read it" at the end of the passage, so it never covers an action.
 
 ## Iconography
 

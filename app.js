@@ -338,6 +338,14 @@
   function updateToTop() {
     var reading = !!view.querySelector(".verse");
     var show = reading && window.scrollY > window.innerHeight * 0.9;
+    // Never cover a main button. Hide while any full width button sits in the corner the button floats over.
+    if (show) {
+      var zoneTop = window.innerHeight - ((window.innerWidth < 900 ? 100 : 32) + 48 + 16);
+      view.querySelectorAll(".btn").forEach(function (b) {
+        var r = b.getBoundingClientRect();
+        if (r.height && r.bottom > zoneTop && r.top < window.innerHeight) show = false;
+      });
+    }
     if (toTop.hidden === show) {
       toTop.hidden = !show;
       toTop.setAttribute("aria-label", t("toTop"));
