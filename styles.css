@@ -1,13 +1,13 @@
 :root {
-  --bg: #F7F5F2;
+  --bg: #FBFAF7;
   --surface: #FFFFFF;
   --ink: #1C211E;
   --muted: #67706B;
   --line: #ECE9E4;
   --primary: #2F6B4F;
   --green-text: #275C43;
-  --soft: #E7F1EB;
-  --halo: #CFE5D8;
+  --soft: #E8EFE3;
+  --halo: #D3E0CB;
   --chip: #EFECE7;
   --chip-text: #5E5A6B;
   --chevron: #878394;
@@ -21,6 +21,10 @@
   --max: 1040px;
   --narrow: 680px;
   --topbar: 64px;
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-blur: blur(20px) saturate(1.6);
+  --glass-shadow: 0 4px 24px rgba(28, 33, 30, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --selected: rgba(232, 239, 227, 0.9);
 }
 
 * { box-sizing: border-box; }
@@ -382,4 +386,67 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
 @media (min-width: 900px) {
   .to-top { bottom: 32px; right: max(var(--gutter), calc((100% - var(--max)) / 2 + var(--gutter))); }
   .to-top:hover { background: #FBFAF8; }
+}
+
+/* ============================================================
+   Warm white, sage and glass.
+   Glass only on things that float above the content: the tab bar, the reading bar,
+   round buttons and back to top. Content sits flat on the page, separated by space
+   and hairlines. Cards stay only where they hold controls, like Settings.
+   ============================================================ */
+.glass, .round, .to-top {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: var(--glass-shadow);
+}
+.round { color: var(--chip-text); }
+@media (min-width: 900px) { .pill:hover, .round:hover { background: rgba(255, 255, 255, 0.9); } }
+
+/* Header sits on the page, no white band */
+.top { background: transparent; border-bottom: 0; }
+
+/* Summary, passage, calendar and journal day sit flat on the page */
+[data-key] > .card.pad, .card.pad.summary, .col.side .card.pad { background: none; border: 0; border-radius: 0; padding: 4px 0 0; }
+.card.passage-card { background: none; border: 0; border-radius: 0; padding: 0; }
+.card.cal { background: none; border: 0; border-radius: 0; padding: 4px 0 0; }
+.jcard, .card.jcard { background: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 16px 0 4px; }
+.j-list { gap: 0; }
+@media (min-width: 900px) { a.jcard:hover { background: none; } a.jcard:hover .j-title { color: var(--green-text); } }
+
+/* The passage is a divided row that opens in place, not a card */
+.disc { background: none; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; overflow: visible; }
+.disc + .disc { margin-top: 0; border-top: 0; }
+.disc-head { padding: 0; }
+.disc-body { padding: 0 0 12px; }
+.disc-head:focus-visible { border-radius: 8px; }
+@media (min-width: 900px) { .disc-head:hover { background: none; color: var(--green-text); } }
+
+/* Phones. A floating glass tab bar, centered above the home bar. */
+@media (max-width: 899px) {
+  .tabs {
+    left: 50%; right: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); transform: translateX(-50%);
+    border-top: 0; border-radius: 999px;
+    background: var(--glass); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+    border: 1px solid rgba(0, 0, 0, 0.04); box-shadow: var(--glass-shadow);
+  }
+  .tabs .inner { display: flex; gap: 6px; padding: 6px; }
+  .tabs a:not(.brand) { padding: 6px 22px; border-radius: 999px; gap: 2px; min-width: 44px; }
+  .tabs a[aria-current="page"] { background: var(--selected); }
+  .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); }
+  .to-top { bottom: calc(env(safe-area-inset-bottom, 0px) + 100px); }
+
+  /* The reading bar floats too, with a little space around it */
+  .reading-bar {
+    left: 12px; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 8px);
+    border: 1px solid rgba(0, 0, 0, 0.04); border-radius: 22px;
+    background: var(--glass); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow);
+    transform: translateY(calc(-100% - 24px));
+  }
+  .reading-bar .inner { padding: 10px 16px; gap: 8px; }
+}
+/* Laptops keep the top bar, in glass over warm white */
+@media (min-width: 900px) {
+  .tabs { background: rgba(251, 250, 247, 0.8); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
 }

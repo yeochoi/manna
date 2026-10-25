@@ -5,7 +5,7 @@
   "start_url": "./#/today",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#F7F5F2",
+  "background_color": "#FBFAF7",
   "theme_color": "#FFFFFF",
   "lang": "ko",
   "icons": [
