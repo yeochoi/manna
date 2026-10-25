@@ -332,7 +332,7 @@
     return '<span class="streak' + (n ? "" : " off") + '">' + icons.flame + esc(n ? t("streakDays", { n: n }) : t("streakStart")) + "</span>";
   }
 
-  var logo = '<svg width="64" height="64" viewBox="0 0 100 100" role="img" aria-label="Manna"><rect width="100" height="100" rx="22" fill="#2F6B4F"/><path d="M17 30 Q33 23 47.5 31 V78 Q33 70 17 76 Z" fill="#FFFFFF"/><path d="M52.5 31 Q67 23 83 30 V76 Q67 70 52.5 78 Z" fill="#FFFFFF"/></svg>';
+  var logo = '<img src="icon.svg?v=3" width="64" height="64" alt="Manna">';
   var featureIcons = [
     '<path d="M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z"/>',
     '<path d="M12 2l2.4 6.2L21 9l-5 4.6L17.4 21 12 17.3 6.6 21 8 13.6 3 9l6.6-.8z"/>',
