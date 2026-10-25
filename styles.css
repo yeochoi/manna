@@ -143,6 +143,7 @@ a { color: var(--green-text); }
   background: var(--primary); color: #FFFFFF; font-size: 17px; font-weight: 600;
 }
 .btn:disabled { opacity: 0.5; }
+.btn.danger { background: var(--coral-text); }
 .btn.secondary { background: var(--surface); color: var(--green-text); border: 1px solid var(--line); }
 .btn.small { height: 44px; font-size: 15px; }
 .link-btn { background: none; border: none; padding: 10px 0; color: var(--green-text); font-size: 15px; font-weight: 600; text-align: left; }

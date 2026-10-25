@@ -94,7 +94,15 @@ window.STRINGS = {
     pickChapter: "{book} 몇 장까지 읽었나요?",
     allBooks: "다른 책 고르기",
     placeSaved: "읽던 곳을 바꿨어요",
-    loadError: "본문을 불러오지 못했어요."
+    loadError: "본문을 불러오지 못했어요.",
+    resetSection: "초기화",
+    resetApp: "Manna 초기화",
+    resetBody: "이 기기에 저장된 기록, 요약, 읽던 곳이 모두 지워져요. 되돌릴 수 없어요.",
+    resetKeepKey: "API 키도 지우기",
+    resetExportFirst: "먼저 내보내기",
+    resetConfirm: "초기화",
+    resetCancel: "취소",
+    resetDone: "Manna를 초기화했어요"
   },
 
   en: {
@@ -191,6 +199,14 @@ window.STRINGS = {
     pickChapter: "How far did you read in {book}?",
     allBooks: "Choose another book",
     placeSaved: "Reading place updated",
-    loadError: "Couldn't load the passage."
+    loadError: "Couldn't load the passage.",
+    resetSection: "Reset",
+    resetApp: "Reset Manna",
+    resetBody: "This deletes your journal, summaries and reading place on this device. It can't be undone.",
+    resetKeepKey: "Also remove API key",
+    resetExportFirst: "Export first",
+    resetConfirm: "Reset",
+    resetCancel: "Cancel",
+    resetDone: "Manna has been reset"
   }
 };

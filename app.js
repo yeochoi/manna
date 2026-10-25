@@ -323,7 +323,7 @@
   }
 
   // ---------- Screens ----------
-  var ui = { extra: false, month: null, selected: null, openPassage: {}, pickBook: null };
+  var ui = { extra: false, month: null, selected: null, openPassage: {}, pickBook: null, resetOpen: false };
   function onRoute(prefix) { var h = location.hash || "#/today"; return h.indexOf(prefix) === 0; }
   function entryTr(e) { return e.tr || "krv"; }
 
@@ -562,8 +562,43 @@
       '<input type="file" id="importFile" accept="application/json,.json" class="sr-only" tabindex="-1">' +
       '<p class="note" style="margin-top:8px">' + esc(t("backupHint")) + "</p>";
 
+    html += '<div class="section">' + esc(t("resetSection")) + '</div><div class="card">';
+    if (!ui.resetOpen) {
+      html += '<button class="row-item" type="button" id="resetOpen"><span class="warn" style="font-size:15px">' + esc(t("resetApp")) + "</span>" + icons.chev + "</button>";
+    } else {
+      html += '<div class="block"><span style="font-weight:600">' + esc(t("resetApp")) + "</span>" +
+        '<p class="note" style="margin:0">' + esc(t("resetBody")) + "</p>" +
+        '<label style="display:flex;align-items:center;gap:10px;min-height:44px"><input type="checkbox" id="resetKey" style="width:20px;height:20px;accent-color:var(--primary)"><span>' + esc(t("resetKeepKey")) + "</span></label>" +
+        '<div class="btn-row"><button class="pill" type="button" id="resetExport">' + esc(t("resetExportFirst")) + "</button>" +
+        '<button class="pill" type="button" id="resetCancel">' + esc(t("resetCancel")) + "</button></div>" +
+        '<button class="btn danger" type="button" id="resetGo">' + esc(t("resetConfirm")) + "</button></div>";
+    }
+    html += "</div>";
+
     html += '<div class="note-box" style="margin-top:24px">' + esc(t("source")) + "</div></div>";
     view.innerHTML = html;
+
+    var ro = document.getElementById("resetOpen");
+    if (ro) ro.onclick = function () { ui.resetOpen = true; renderSettings(); document.getElementById("resetGo").scrollIntoView({ block: "center" }); };
+    var rc = document.getElementById("resetCancel");
+    if (rc) rc.onclick = function () { ui.resetOpen = false; renderSettings(); };
+    var rx = document.getElementById("resetExport");
+    if (rx) rx.onclick = exportData;
+    var rg = document.getElementById("resetGo");
+    if (rg) rg.onclick = function () {
+      var lang = db.settings.lang;
+      if (document.getElementById("resetKey").checked) setKey("");
+      try { localStorage.removeItem(STORE); } catch (e) {}
+      db = freshDefaults();
+      db.settings.lang = lang;
+      ui = { extra: false, month: null, selected: null, openPassage: {}, pickBook: null };
+      inflight = {}; failed = {};
+      applyLang();
+      applyFont();
+      location.hash = "#/today";
+      render();
+      toast(t("resetDone"));
+    };
 
     Array.prototype.forEach.call(view.querySelectorAll("[data-seg]"), function (b) {
       b.onclick = function () {
@@ -682,6 +717,7 @@
   }
   window.addEventListener("hashchange", function () {
     if (location.hash.indexOf("#/pick") !== 0) ui.pickBook = null;
+    if (location.hash.indexOf("#/settings") !== 0) ui.resetOpen = false;
     if (toastEl.querySelector("button")) toastEl.innerHTML = "";
     window.scrollTo(0, 0);
     render();
