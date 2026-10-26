@@ -336,7 +336,8 @@
   }
   // Back to top. Shows near the thumb once you are a screen into an open passage, on any page.
   function updateToTop() {
-    var reading = !!view.querySelector(".verse");
+    // Only while reading a passage. The text size sample in Settings also uses .verse, so look inside the passage only.
+    var reading = !!view.querySelector(".disc-body .verse, .passage-card .verse");
     var show = reading && window.scrollY > window.innerHeight * 0.9;
     // Never cover a main button. Hide while any full width button sits in the corner the button floats over.
     if (show) {
@@ -632,22 +633,23 @@
       '<input type="file" id="importFile" accept="application/json,.json" class="sr-only" tabindex="-1" aria-label="' + esc(t("importData")) + '">' +
       '<p class="note" style="margin-top:8px">' + esc(t("backupHint")) + "</p>";
 
-    html += '<div class="section">' + esc(t("resetSection")) + '</div><div class="card">';
+
+    html += '<div class="section">' + esc(t("aboutSection")) + '</div><div class="card"><a class="row-item" href="#/design"><span>' + esc(t("designSystem")) + "</span>" + icons.chev + "</a></div>";
+
+    // Delete style actions are plain coral text, centered at the bottom, the same in all three apps.
+    var resetHTML = "";
     if (!ui.resetOpen) {
-      html += '<button class="row-item" type="button" id="resetOpen"><span class="warn" style="font-size:17px">' + esc(t("resetApp")) + "</span>" + icons.chev + "</button>";
+      resetHTML = '<div class="del-wrap"><button class="text-btn" type="button" id="resetOpen">' + esc(t("resetApp")) + "</button></div>";
     } else {
-      html += '<div class="block"><span style="font-weight:600">' + esc(t("resetApp")) + "</span>" +
+      resetHTML = '<div class="section">' + esc(t("resetSection")) + '</div><div class="card"><div class="block"><span style="font-weight:600">' + esc(t("resetApp")) + "</span>" +
         '<p class="note" style="margin:0">' + esc(t("resetBody")) + "</p>" +
         '<label style="display:flex;align-items:center;gap:10px;min-height:44px"><input type="checkbox" id="resetKey" style="width:20px;height:20px;accent-color:var(--primary)"><span>' + esc(t("resetKeepKey")) + "</span></label>" +
         '<div class="btn-row"><button class="pill" type="button" id="resetExport">' + esc(t("resetExportFirst")) + "</button>" +
         '<button class="pill" type="button" id="resetCancel">' + esc(t("resetCancel")) + "</button></div>" +
-        '<button class="btn danger" type="button" id="resetGo">' + esc(t("resetConfirm")) + "</button></div>";
+        '<button class="btn danger" type="button" id="resetGo">' + esc(t("resetConfirm")) + "</button></div>" + "</div>";
     }
-    html += "</div>";
-
-    html += '<div class="section">' + esc(t("aboutSection")) + '</div><div class="card"><a class="row-item" href="#/design"><span>' + esc(t("designSystem")) + "</span>" + icons.chev + "</a></div>";
-
-    html += '<div class="note-box" style="margin-top:24px">' + esc(t("source")) + "</div></div>";
+    html += '<div class="note-box" style="margin-top:24px">' + esc(t("source")) + "</div>";
+    html += resetHTML + "</div>";
     view.innerHTML = html;
 
     var ro = document.getElementById("resetOpen");

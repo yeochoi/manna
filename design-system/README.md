@@ -57,6 +57,7 @@ Rules
 - Phones use a 22 side margin. Laptops center content inside `max-width` 1040, with backgrounds running full width.
 - Today and a past day use two columns on laptops. The summary stays beside the passage while you read.
 - Sections start with a `title` header in ink. Content sits right on the ground: no header band, no boxes around the summary, passage or calendar. Sections are split by a 1px `line` hairline. Settings keep white cards with a 1px `line` border and `radius-card`, because grouped controls need a container.
+- Destructive actions always go last. A single one is plain coral text, centered. Two or more related ones are grouped in one card. They always ask first.
 - A floating control never covers a button. Floating controls hide or move when a button reaches them.
 - Layers follow iOS. Things that float over content are glass with a shadow. That is the tab bar, the reading bar and back to top. Glass is white at 72 percent, blur 20, saturate 1.6, a soft shadow and a 1px inner highlight.
 - Things on the page are flat. Every round button on the page, like the gear and close, is one grey circle. `chip`, 44 wide, a 20 icon with a 2 line in `ink`, no shadow, no line. The same in Shuo and Stay Counter.

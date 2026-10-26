@@ -481,3 +481,7 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
 .round svg *, .to-top svg * { stroke-width: 2; }
 /* Back to top floats over the text, so it is glass with a shadow, like the tab bar and reading bar. */
 .to-top { background: var(--glass); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border: 1px solid rgba(0, 0, 0, 0.04); box-shadow: var(--glass-shadow); color: var(--ink); }
+/* Delete style actions are plain coral text, centered at the bottom, the same in all three apps. They always ask first. */
+.del-wrap { display: flex; flex-direction: column; align-items: center; margin-top: 24px; }
+.text-btn { border: 0; background: none; font-family: inherit; font-size: 17px; line-height: 22px; font-weight: 600; color: var(--coral-text); padding: 11px 16px; min-height: 44px; border-radius: 12px; }
+.text-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
