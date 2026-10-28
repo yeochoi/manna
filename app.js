@@ -153,6 +153,7 @@
     toastTimer = setTimeout(function () { toastEl.innerHTML = ""; }, actionLabel ? 5000 : 2500);
   }
   var icons = {
+    share: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>',
     gear: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
     flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-8z"/></svg>',
     left: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
@@ -220,6 +221,9 @@
         (kv.text ? '<div class="verse-text">' + esc(kv.text) + "</div>" : "") + "</div>";
     }
     html += '<div class="message"><span class="message-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyMessage")) + '</span><span class="message-text">' + esc(data.message) + "</span></div>";
+    // Share the key verse and key message. A green text button right under the message, at the end of exactly what gets shared.
+    html += '<button class="text-btn share-text" type="button" data-share data-ref="' + esc(data.key_verse || "") + '" data-verse="' + esc(kv && kv.text ? kv.text : "") +
+      '" data-msg="' + esc(data.message || "") + '" data-lang="' + esc(lang) + '" aria-label="' + esc(t("shareSummary")) + '">' + icons.share + "<span>" + esc(t("share")) + "</span></button>";
     return html + "</div>";
   }
   function skeleton() {
@@ -808,7 +812,7 @@
     h += '<div class="section">' + esc(d.summary) + '</div><div class="card pad summary"><ol class="points">' +
       '<li><span class="num">1</span><span>' + esc(sample.p1) + '</span></li><li><span class="num">2</span><span>' + esc(sample.p2) + "</span></li></ol>" +
       '<div><div class="verse-label">' + esc(sample.kvl) + '</div><div class="verse-text">' + esc(sample.kv) + "</div></div>" +
-      '<div class="message"><span class="message-label">' + esc(sample.ml) + '</span><span class="message-text">' + esc(sample.msg) + "</span></div></div>";
+      '<div class="message"><span class="message-label">' + esc(sample.ml) + '</span><span class="message-text">' + esc(sample.msg) + '</span></div><span class="text-btn share-text">' + icons.share + "<span>" + esc(EN.share) + "</span></span></div>";
 
     h += '<p class="note" style="margin:32px 0 0">' + esc(d.passage) + '</p><div class="card disc" style="margin-top:0"><div class="disc-head">' + esc(sample.pass) + icons.down + "</div></div>" +
       '<div class="card disc"><div class="disc-head">' + esc(sample.pass) + icons.up + '</div><div class="disc-body"><section class="chapter"><div class="chapter-break"><span>' + esc(sample.ch) + '</span></div><p class="verse"><sup>1</sup>' + esc(sample.v) + "</p></section></div></div>";
@@ -832,6 +836,81 @@
       b.onclick = function () { Array.prototype.forEach.call(view.querySelectorAll('[data-seg="dsdemo"]'), function (o) { o.setAttribute("aria-pressed", String(o === b)); }); };
     });
   }
+
+  // Share the key verse and message as a picture card in Manna's style, with a short text and the link beside it.
+  // Nothing on the card is tappable, it is a picture. The link travels in the text.
+  var SITE = location.origin + location.pathname;
+  function wrapLines(ctx, text, max) {
+    var words = String(text).split(/\s+/), lines = [], line = "";
+    words.forEach(function (w) {
+      var test = line ? line + " " + w : w;
+      if (ctx.measureText(test).width <= max) { line = test; return; }
+      if (line) lines.push(line);
+      if (ctx.measureText(w).width <= max) { line = w; return; }
+      line = "";
+      Array.from(w).forEach(function (ch) { if (ctx.measureText(line + ch).width > max) { lines.push(line); line = ch; } else line += ch; });
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+  function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  // Drawn at 1080 wide. Sizes are the app's type scale times 1080 / 390.
+  function drawCard(c, d) {
+    var S = 1080 / 390, W = 1080, P = Math.round(26 * S), inner = W - P * 2, ko = d.lang === "ko";
+    var sans = ko ? "'Noto Sans KR', Outfit, sans-serif" : "Outfit, 'Noto Sans KR', sans-serif";
+    var mctx = c.getContext("2d");
+    function font(size, weight) { return weight + " " + Math.round(size * S) + "px " + sans; }
+    mctx.font = font(17, 400); var verse = d.verse ? wrapLines(mctx, "“" + d.verse + "”", inner) : [];
+    var boxPad = Math.round(14 * S), boxInner = inner - boxPad * 2;
+    mctx.font = font(17, 400); var msg = wrapLines(mctx, d.msg, boxInner);
+    var LV = 17 * 1.7 * S, LM = 24 * S, LT = 26 * S, LS = 19 * S;
+    var boxH = boxPad * 2 + LS + 2 * S + msg.length * LM;
+    var H = Math.round(P + LT + 12 * S + verse.length * LV + 18 * S + boxH + 20 * S + LS + P);
+    c.width = W; c.height = H;
+    var ctx = c.getContext("2d"); ctx.textBaseline = "top";
+    ctx.fillStyle = "#FBFAF7"; ctx.fillRect(0, 0, W, H);
+    var y = P;
+    ctx.fillStyle = "#275C43"; ctx.font = font(20, 600); ctx.fillText(d.ref, P, y + 3 * S); y += LT + 12 * S;
+    ctx.fillStyle = "#1C211E"; ctx.font = font(17, 400);
+    verse.forEach(function (l) { ctx.fillText(l, P, y + (LV - 17 * S) / 2); y += LV; });
+    y += 18 * S;
+    ctx.fillStyle = "#E8EFE3"; roundRect(ctx, P, y, inner, boxH, 12 * S); ctx.fill();
+    var by = y + boxPad;
+    ctx.fillStyle = "#275C43"; ctx.font = font(13, 400); ctx.fillText(d.label, P + boxPad, by + 3 * S); by += LS + 2 * S;
+    ctx.fillStyle = "#1C211E"; ctx.font = font(17, 400);
+    msg.forEach(function (l) { ctx.fillText(l, P + boxPad, by + (LM - 17 * S) / 2); by += LM; });
+    y += boxH + 20 * S;
+    // Footer. The Manna mark on the left, the address on the right, both quiet.
+    var mark = 18 * S;
+    ctx.save(); ctx.translate(P, y + (LS - mark) / 2); ctx.scale(mark / 272, mark / 272); ctx.translate(-120, -120);
+    ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.lineWidth = 22; ctx.strokeStyle = "#2F6B4F"; ctx.fillStyle = "#E8EFE3";
+    ["M256 150c-40-22-92-28-136-20v228c44-8 96-2 136 20", "M256 150c40-22 92-28 136-20v228c-44-8-96-2-136 20"].forEach(function (pd) { var p2 = new Path2D(pd); ctx.fill(p2); ctx.stroke(p2); });
+    ctx.stroke(new Path2D("M256 150v228")); ctx.restore();
+    ctx.fillStyle = "#67706B"; ctx.font = font(13, 400);
+    ctx.fillText("Manna", P + mark + 6 * S, y + 3 * S);
+    var addr = SITE.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    ctx.textAlign = "right"; ctx.fillText(addr, W - P, y + 3 * S); ctx.textAlign = "left";
+    return c;
+  }
+  function cardFile(d) {
+    var url = drawCard(document.createElement("canvas"), d).toDataURL("image/png");
+    var bin = atob(url.split(",")[1]), arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new File([arr], "manna-" + d.ref.replace(/[^\w가-힣]+/g, "-") + ".png", { type: "image/png" });
+  }
+  window.mannaCard = drawCard; // used by the design system page and tests
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-share]");
+    if (!b) return;
+    var d = { ref: b.getAttribute("data-ref"), verse: b.getAttribute("data-verse"), msg: b.getAttribute("data-msg"), lang: b.getAttribute("data-lang"), label: t("keyMessage") };
+    var caption = t("shareFrom", { ref: d.ref }) + "\n" + SITE;
+    var full = (d.verse ? "“" + d.verse + "”\n" + d.ref + "\n\n" : "") + d.label + "\n" + d.msg + "\n\nManna\n" + SITE;
+    var file = null;
+    try { file = cardFile(d); } catch (err) {}
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], text: caption }).catch(function () {}); return; }
+    if (navigator.share) { navigator.share({ text: full }).catch(function () {}); return; }
+    (navigator.clipboard ? navigator.clipboard.writeText(full) : Promise.reject()).then(function () { toast(t("shareCopied")); }, function () {});
+  });
 
   // ---------- Router ----------
   function render() {

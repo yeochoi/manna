@@ -485,3 +485,6 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
 .del-wrap { display: flex; flex-direction: column; align-items: center; margin-top: 24px; }
 .text-btn { border: 0; background: none; font-family: inherit; font-size: 17px; line-height: 22px; font-weight: 600; color: var(--coral-text); padding: 11px 16px; min-height: 44px; border-radius: 12px; }
 .text-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* Share is a green text button right under the key message, at the end of what gets shared. */
+.share-text { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; color: var(--green-text); padding: 11px 0; margin-top: -8px; }
+.share-text svg { width: 20px; height: 20px; }
