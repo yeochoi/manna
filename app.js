@@ -837,8 +837,8 @@
     });
   }
 
-  // Share the key verse and message as a picture card in Manna's style, with a short text and the link beside it.
-  // Nothing on the card is tappable, it is a picture. The link travels in the text.
+  // Share the key verse and message as one picture card in Manna's style, nothing else, so chats show a single message.
+  // The card carries the Manna address. Nothing on it is tappable, it is a picture.
   var SITE = location.origin + location.pathname;
   function wrapLines(ctx, text, max) {
     var words = String(text).split(/\s+/), lines = [], line = "";
@@ -886,10 +886,12 @@
     ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.lineWidth = 22; ctx.strokeStyle = "#2F6B4F"; ctx.fillStyle = "#E8EFE3";
     ["M256 150c-40-22-92-28-136-20v228c44-8 96-2 136 20", "M256 150c40-22 92-28 136-20v228c-44-8-96-2-136 20"].forEach(function (pd) { var p2 = new Path2D(pd); ctx.fill(p2); ctx.stroke(p2); });
     ctx.stroke(new Path2D("M256 150v228")); ctx.restore();
-    ctx.fillStyle = "#67706B"; ctx.font = font(13, 400);
-    ctx.fillText("Manna", P + mark + 6 * S, y + 3 * S);
+    // Center the words on the mark using the real ink height of the letters, so it lines up the same on every phone.
+    ctx.fillStyle = "#67706B"; ctx.font = font(13, 400); ctx.textBaseline = "alphabetic";
+    var mid = y + LS / 2, mm = ctx.measureText("Manna"), base = mid + (mm.actualBoundingBoxAscent - mm.actualBoundingBoxDescent) / 2;
+    ctx.fillText("Manna", P + mark + 6 * S, base);
     var addr = SITE.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    ctx.textAlign = "right"; ctx.fillText(addr, W - P, y + 3 * S); ctx.textAlign = "left";
+    ctx.textAlign = "right"; ctx.fillText(addr, W - P, base); ctx.textAlign = "left"; ctx.textBaseline = "top";
     return c;
   }
   function cardFile(d) {
@@ -902,12 +904,14 @@
   document.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("[data-share]");
     if (!b) return;
-    var d = { ref: b.getAttribute("data-ref"), verse: b.getAttribute("data-verse"), msg: b.getAttribute("data-msg"), lang: b.getAttribute("data-lang"), label: t("keyMessage") };
-    var caption = t("shareFrom", { ref: d.ref }) + "\n" + SITE;
+    var d = { ref: b.getAttribute("data-ref"), verse: b.getAttribute("data-verse"), msg: b.getAttribute("data-msg"), lang: b.getAttribute("data-lang") };
+    // The card follows the language of the summary, not the app, so a Korean verse always gets a Korean label.
+    var L = window.STRINGS[d.lang] || window.STRINGS.en;
+    d.label = L.keyMessage;
     var full = (d.verse ? "“" + d.verse + "”\n" + d.ref + "\n\n" : "") + d.label + "\n" + d.msg + "\n\nManna\n" + SITE;
     var file = null;
     try { file = cardFile(d); } catch (err) {}
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], text: caption }).catch(function () {}); return; }
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file] }).catch(function () {}); return; }
     if (navigator.share) { navigator.share({ text: full }).catch(function () {}); return; }
     (navigator.clipboard ? navigator.clipboard.writeText(full) : Promise.reject()).then(function () { toast(t("shareCopied")); }, function () {});
   });
