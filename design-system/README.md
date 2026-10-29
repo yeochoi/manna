@@ -62,6 +62,7 @@ Rules
 - Buttons have one job per style. Primary green fill for the one main action. Secondary white with a line for every other action, like Listen, Share and Read the next chapters. Round grey circle for icon only. Coral text for destructive. Sage is never a button, it only highlights.
 - Passage is one row everywhere. Open while you read today, closed after and in the Journal. Listen sits at the top of the open passage and reads it with the phone's voice, highlighting the verse in sage. The reading bar holds a green play button and the speed, 0.8, 1 and 1.25. On iPhone the web app stops reading when the screen locks.
 - Share opens a preview of the picture card first, then the phone's share sheet. It sends the card and nothing else.
+- The AI note, that the summary is a guide and the passage comes first, appears once in Settings under About, not under the summary every day.
 - A floating control never covers a button. Floating controls hide or move when a button reaches them.
 - Layers follow iOS. Things that float over content are glass with a shadow. That is the tab bar, the reading bar and back to top. Glass is white at 72 percent, blur 20, saturate 1.6, a soft shadow and a 1px inner highlight.
 - Things on the page are flat. Every round button on the page, like the gear and close, is one grey circle. `chip`, 44 wide, a 20 icon with a 2 line in `ink`, no shadow, no line. The same in Shuo and Stay Counter.

@@ -467,7 +467,6 @@
       var html = head + '<span class="top-label">' + esc(t("today") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(rangeLabel(chs)) + "</h1></header>";
       html += '<div class="content reading"><div class="cols"><div class="col side"><div class="section">' + esc(t("summary")) + "</div>";
       html += '<div id="summarySlot" data-key="' + esc(rangeKey(chs, mode, tr)) + '">' + summaryBlock(chs, mode, tr) + "</div>";
-      html += '<p class="note" style="margin-top:8px">' + esc(t("summaryNote")) + "</p>";
       html += '<div class="side-progress" id="sideProgress" role="region" aria-label="' + esc(t("listening")) + '"></div>';
       html += '</div><div class="col main">' + disclosure("read", t("passage", { tr: trName(tr) }), !ui.readClosed, passageHTML(chs, tr), true);
       html += '<div class="done-area"><button class="btn" type="button" id="done">' + esc(t("doneReading")) + "</button></div></div></div></div>";
@@ -658,6 +657,8 @@
 
 
     html += '<div class="section">' + esc(t("aboutSection")) + '</div><div class="card"><a class="row-item" href="#/design"><span>' + esc(t("designSystem")) + "</span>" + icons.chev + "</a></div>";
+    // The AI note lives here once, not under the summary every day.
+    html += '<p class="note" style="margin-top:8px">' + esc(t("summaryNote")) + "</p>";
 
     // Delete style actions are plain coral text, centered at the bottom, the same in all three apps.
     var resetHTML = "";
