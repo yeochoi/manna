@@ -321,13 +321,17 @@
       bar.classList.toggle("show", !!show);
       bar.inert = !show;
       // The bar repeats the chapter headings in the passage, so screen readers skip it.
+      // The reading line sits at 35% of the screen. Near the end of the page it slides down to the bottom,
+      // so scrolling to the end always fills the last chapter.
       var vh = window.innerHeight, current = 0;
+      var left = document.documentElement.scrollHeight - vh - window.scrollY;
+      var line = vh - Math.max(0, Math.min(vh * 0.65, left));
       for (var i = 0; i < chs.length; i++) {
         var el = document.getElementById("ch-" + i);
         if (!el) return;
         var r = el.getBoundingClientRect();
-        if (r.top < vh * 0.35) current = i;
-        var p = (vh * 0.35 - r.top) / Math.max(1, r.height);
+        if (r.top < line) current = i;
+        var p = (line - r.top) / Math.max(1, r.height);
         var w = Math.max(0, Math.min(1, p)) * 100 + "%";
         holders.forEach(function (h) { h.querySelectorAll(".progress b")[i].style.width = w; });
       }

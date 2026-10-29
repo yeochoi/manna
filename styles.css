@@ -536,3 +536,14 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
 .kv-ref { color: var(--muted); white-space: nowrap; }
 .disc-row { position: relative; }
 .listen-btn { position: absolute; top: 11px; left: 90px; }
+
+/* Icon actions inside a section heading are 32 circles with an 18 icon, so they sit with the heading instead of towering over it.
+   The tap area stays 44. The content below starts 12 under the circle, the tallest thing in the heading. */
+.head-row .round, .listen-btn { width: 32px; height: 32px; }
+.head-row .round { position: relative; }
+.head-row .round svg, .listen-btn svg { width: 18px; height: 18px; }
+.head-row .round::after, .listen-btn::after { content: ""; position: absolute; inset: -6px; }
+.head-row .round { margin: -3px 0; }
+.summary .kv-head { margin: 12px 0 -5px; }
+.listen-btn { top: 17px; }
+.disc-row:has(.listen-btn:not([hidden])) .disc-head { padding-bottom: 15px; }
