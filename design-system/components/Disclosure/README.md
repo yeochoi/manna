@@ -1,9 +1,8 @@
 # Disclosure
 
-A section that opens in place, used for the full passage.
+The Passage row. One row everywhere, so people learn it once.
 
-- No card. Hairlines above and below. The head has a `section` header and a 16 `chevron` pointing down. Open, it has 20 above the text and 12 below, so the content starts 12 under the header like every other section. Closed, it has 20 above and below. The whole row is the tap area.
-- It is a section at the same level as Summary, so it uses the same header style. 32 above it on phones. On laptops it lines up with Summary in the next column.
-- Open, the chevron points up. No line under the head, the chapter name below already starts the content.
-- The first chapter name starts right at the content edge, with no extra space. Inside, each chapter starts with its name in `green-text` `title`, as a heading. No hairline. A 36 gap above each later chapter separates them. Verses use `reading`, verse numbers are `green-text` `small`.
-- Closed by default. It remembers being open for the rest of the visit.
+- No card. Hairlines above and below. The head has a `section` header and a 16 `chevron`. Open, it has 20 above the text and 12 below. Closed, 20 above and below. The whole row is the tap area.
+- Open by default while you read today, closed after you finish and on past days in the Journal. If you close it while reading, it stays closed and keeps your place.
+- At the top of an open passage sits Listen, a secondary button with a 20 speaker icon, then 24 of space before the first chapter name. It reads the passage verse by verse with the phone's voice, highlights the current verse in `soft` and keeps it in view. While playing it reads Pause.
+- Inside, each chapter starts with its name in `green-text` `title`. A 36 gap above each later chapter separates them. Verses use `reading`, verse numbers are `green-text` `small`.

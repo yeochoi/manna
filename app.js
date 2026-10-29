@@ -153,6 +153,10 @@
     toastTimer = setTimeout(function () { toastEl.innerHTML = ""; }, actionLabel ? 5000 : 2500);
   }
   var icons = {
+    speaker: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+    pauseLine: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>',
+    play: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+    pause: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></svg>',
     share: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>',
     gear: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
     flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-8z"/></svg>',
@@ -217,13 +221,13 @@
     }
     var kv = verseLookup(data.key_verse, tr);
     if (kv) {
-      html += '<div><div class="verse-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyVerse")) + " · " + esc(kv.label) + "</div>" +
+      html += '<div class="kv-group"><div class="verse-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyVerse")) + " · " + esc(kv.label) + "</div>" +
         (kv.text ? '<div class="verse-text">' + esc(kv.text) + "</div>" : "") + "</div>";
     }
     html += '<div class="message"><span class="message-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyMessage")) + '</span><span class="message-text">' + esc(data.message) + "</span></div>";
-    // Share the key verse and key message. A green text button right under the message, at the end of exactly what gets shared.
-    html += '<button class="text-btn share-text" type="button" data-share data-ref="' + esc(data.key_verse || "") + '" data-verse="' + esc(kv && kv.text ? kv.text : "") +
-      '" data-msg="' + esc(data.message || "") + '" data-lang="' + esc(lang) + '" aria-label="' + esc(t("shareSummary")) + '">' + icons.share + "<span>" + esc(t("share")) + "</span></button>";
+    // Share the key verse and key message. A short secondary button at the end of the block it shares. Tapping it shows a preview first.
+    html += '<button class="btn secondary act-btn share-btn" type="button" data-share data-ref="' + esc(data.key_verse || "") + '" data-verse="' + esc(kv && kv.text ? kv.text : "") +
+      '" data-msg="' + esc(data.message || "") + '" data-lang="' + esc(lang) + '" aria-label="' + esc(t("shareSummary")) + '">' + icons.share + '<span aria-hidden="true">' + esc(t("share")) + "</span></button>";
     return html + "</div>";
   }
   function skeleton() {
@@ -296,7 +300,9 @@
   // Phones show progress in a bar that slides in at the top.
   // Laptops show the same progress at the top of the summary column.
   function progressHTML(n) {
-    return '<div class="row"><span class="title js-title"></span><span class="note js-count"></span></div>' +
+    var play = canListen() ? '<button class="play-btn" type="button" data-listen-toggle aria-label="' + esc(t("listen")) + '">' + icons.play + "</button>" : "";
+    var speed = canListen() ? '<button class="speed-chip" type="button" data-speed aria-label="' + esc(t("speed")) + '">' + rateLabel() + "</button>" : "";
+    return '<div class="row"><div class="bar-left">' + play + '<span class="title js-title" aria-hidden="true"></span></div><div class="bar-right">' + speed + '<span class="note js-count" aria-hidden="true"></span></div></div>' +
       '<div class="progress" style="grid-template-columns:repeat(' + n + ',minmax(0,1fr))">' +
       Array.apply(null, Array(n)).map(function () { return '<div><b style="width:0"></b></div>'; }).join("") + "</div>";
   }
@@ -312,6 +318,7 @@
       var top = document.querySelector(".top");
       var show = top && top.getBoundingClientRect().bottom < 0;
       bar.classList.toggle("show", !!show);
+      bar.inert = !show;
       // The bar repeats the chapter headings in the passage, so screen readers skip it.
       var vh = window.innerHeight, current = 0;
       for (var i = 0; i < chs.length; i++) {
@@ -336,7 +343,7 @@
     if (scrollHandler) window.removeEventListener("scroll", scrollHandler);
     scrollHandler = null;
     bar.classList.remove("show");
-    bar.setAttribute("aria-hidden", "true");
+    bar.inert = true;
   }
   // Back to top. Shows near the thumb once you are a screen into an open passage, on any page.
   function updateToTop() {
@@ -369,13 +376,16 @@
   };
 
   // Expands in place: a card row with a chevron down, opening inside the same card.
-  function disclosure(id, label, open, inner) {
+  // One Passage row everywhere. Open while you read today, closed after and in the Journal.
+  // keep renders the body even when closed, so it can open and close in place without losing your place.
+  function disclosure(id, label, open, inner, keep) {
+    var body = inner ? (canListen() ? '<div class="listen-row"><button class="btn secondary act-btn" type="button" data-listen>' + icons.speaker + "<span>" + esc(t("listen")) + "</span></button></div>" : "") + inner : "";
     return '<div class="card disc"><button class="disc-head" type="button" data-disc="' + id + '" aria-expanded="' + !!open + '" aria-controls="' + id + '-body"><span>' + esc(label) + "</span>" + (open ? icons.up : icons.down) + "</button>" +
-      (open ? '<div class="disc-body" id="' + id + '-body">' + inner + "</div>" : "") + "</div>";
+      (open || keep ? '<div class="disc-body" id="' + id + '-body"' + (open ? "" : " hidden") + ">" + body + "</div>" : "") + "</div>";
   }
 
   // ---------- Screens ----------
-  var ui = { extra: false, month: null, selected: null, openPassage: {}, pickBook: null, resetOpen: false };
+  var ui = { extra: false, month: null, selected: null, openPassage: {}, pickBook: null, resetOpen: false, readClosed: false };
   function onRoute(prefix) { var h = location.hash || "#/today"; return h.indexOf(prefix) === 0; }
   function entryTr(e) { return e.tr || "krv"; }
 
@@ -458,13 +468,20 @@
       html += '<div class="content reading"><div class="cols"><div class="col side"><div class="section">' + esc(t("summary")) + "</div>";
       html += '<div id="summarySlot" data-key="' + esc(rangeKey(chs, mode, tr)) + '">' + summaryBlock(chs, mode, tr) + "</div>";
       html += '<p class="note" style="margin-top:8px">' + esc(t("summaryNote")) + "</p>";
-      html += '<div class="side-progress" id="sideProgress" aria-hidden="true"></div>';
-      html += '</div><div class="col main"><div class="section">' + esc(t("passage", { tr: trName(tr) })) + "</div>";
-      html += '<div class="card passage-card">' + passageHTML(chs, tr) + "</div>";
+      html += '<div class="side-progress" id="sideProgress" role="region" aria-label="' + esc(t("listening")) + '"></div>';
+      html += '</div><div class="col main">' + disclosure("read", t("passage", { tr: trName(tr) }), !ui.readClosed, passageHTML(chs, tr), true);
       html += '<div class="done-area"><button class="btn" type="button" id="done">' + esc(t("doneReading")) + "</button></div></div></div></div>";
       view.innerHTML = html;
       wireSummary(document.getElementById("summarySlot"), chs, mode, tr);
       setupReadingBar(chs);
+      var rh = view.querySelector('[data-disc="read"]');
+      rh.onclick = function () {
+        ui.readClosed = !ui.readClosed;
+        rh.setAttribute("aria-expanded", String(!ui.readClosed));
+        document.getElementById("read-body").hidden = ui.readClosed;
+        rh.querySelector("svg").outerHTML = ui.readClosed ? icons.down : icons.up;
+        if (ui.readClosed) stopListening();
+      };
       document.getElementById("done").onclick = function () { markRead(chs, mode, tr); };
     }).catch(showLoadError);
   }
@@ -479,6 +496,8 @@
     save();
     ui.extra = false;
     ui.openPassage.today = false;
+    ui.readClosed = false;
+    stopListening();
     window.scrollTo(0, 0);
     renderToday();
     toast(t("doneToast"), t("undo"), function () {
@@ -586,7 +605,7 @@
         if (sl) wireSummary(sl, e.chapters, e.mode || "together", tr);
       });
       Array.prototype.forEach.call(view.querySelectorAll("[data-disc]"), function (b) {
-        b.onclick = function () { var i = b.getAttribute("data-disc").slice(1); ui.openPassage[key + i] = !ui.openPassage[key + i]; renderDay(key); };
+        b.onclick = function () { var i = b.getAttribute("data-disc").slice(1); ui.openPassage[key + i] = !ui.openPassage[key + i]; stopListening(); renderDay(key); };
       });
     }).catch(showLoadError);
   }
@@ -812,7 +831,7 @@
     h += '<div class="section">' + esc(d.summary) + '</div><div class="card pad summary"><ol class="points">' +
       '<li><span class="num">1</span><span>' + esc(sample.p1) + '</span></li><li><span class="num">2</span><span>' + esc(sample.p2) + "</span></li></ol>" +
       '<div><div class="verse-label">' + esc(sample.kvl) + '</div><div class="verse-text">' + esc(sample.kv) + "</div></div>" +
-      '<div class="message"><span class="message-label">' + esc(sample.ml) + '</span><span class="message-text">' + esc(sample.msg) + '</span></div><span class="text-btn share-text">' + icons.share + "<span>" + esc(EN.share) + "</span></span></div>";
+      '<div class="message"><span class="message-label">' + esc(sample.ml) + '</span><span class="message-text">' + esc(sample.msg) + '</span></div><span class="btn secondary act-btn">' + icons.share + "<span>" + esc(EN.share) + "</span></span></div>";
 
     h += '<p class="note" style="margin:32px 0 0">' + esc(d.passage) + '</p><div class="card disc" style="margin-top:0"><div class="disc-head">' + esc(sample.pass) + icons.down + "</div></div>" +
       '<div class="card disc"><div class="disc-head">' + esc(sample.pass) + icons.up + '</div><div class="disc-body"><section class="chapter"><div class="chapter-break"><span>' + esc(sample.ch) + '</span></div><p class="verse"><sup>1</sup>' + esc(sample.v) + "</p></section></div></div>";
@@ -901,20 +920,126 @@
     return new File([arr], "manna-" + d.ref.replace(/[^\w가-힣]+/g, "-") + ".png", { type: "image/png" });
   }
   window.mannaCard = drawCard; // used by the design system page and tests
-  document.addEventListener("click", function (e) {
-    var b = e.target.closest && e.target.closest("[data-share]");
-    if (!b) return;
+  // Share opens a preview of the card first. The green Share button in it opens the phone's share sheet.
+  var shareSheet = null, shareFrom = null;
+  function closeShare() {
+    if (!shareSheet) return;
+    shareSheet.remove(); shareSheet = null;
+    document.body.style.overflow = "";
+    if (shareFrom) shareFrom.focus();
+  }
+  function openShare(b) {
     var d = { ref: b.getAttribute("data-ref"), verse: b.getAttribute("data-verse"), msg: b.getAttribute("data-msg"), lang: b.getAttribute("data-lang") };
     // The card follows the language of the summary, not the app, so a Korean verse always gets a Korean label.
     var L = window.STRINGS[d.lang] || window.STRINGS.en;
     d.label = L.keyMessage;
     var full = (d.verse ? "“" + d.verse + "”\n" + d.ref + "\n\n" : "") + d.label + "\n" + d.msg + "\n\nManna\n" + SITE;
-    var file = null;
-    try { file = cardFile(d); } catch (err) {}
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file] }).catch(function () {}); return; }
-    if (navigator.share) { navigator.share({ text: full }).catch(function () {}); return; }
-    (navigator.clipboard ? navigator.clipboard.writeText(full) : Promise.reject()).then(function () { toast(t("shareCopied")); }, function () {});
+    var file = null, src = "";
+    try { file = cardFile(d); src = URL.createObjectURL(file); } catch (err) {}
+    shareFrom = b;
+    shareSheet = document.createElement("div");
+    shareSheet.className = "share-wrap";
+    shareSheet.innerHTML = '<div class="share-sheet" role="dialog" aria-modal="true" aria-labelledby="shareTitle">' +
+      '<div class="share-head"><button class="round" type="button" data-close aria-label="' + esc(t("close")) + '">' + icons.x + '</button><h2 class="share-title" id="shareTitle">' + esc(t("share")) + "</h2><span></span></div>" +
+      (src ? '<img class="share-img" src="' + src + '" alt="' + esc(d.ref + ". " + d.verse + " " + d.label + ". " + d.msg) + '">' : '<p class="share-text-preview">' + esc(full).replace(/\n/g, "<br>") + "</p>") +
+      '<button class="btn" type="button" data-send>' + esc(t("share")) + "</button></div>";
+    document.body.appendChild(shareSheet);
+    document.body.style.overflow = "hidden";
+    shareSheet.querySelector("[data-close]").focus();
+    shareSheet.addEventListener("click", function (e) {
+      if (e.target === shareSheet || e.target.closest("[data-close]")) { closeShare(); return; }
+      if (!e.target.closest("[data-send]")) return;
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file] }).then(closeShare, function () {}); return; }
+      if (navigator.share) { navigator.share({ text: full }).then(closeShare, function () {}); return; }
+      (navigator.clipboard ? navigator.clipboard.writeText(full) : Promise.reject()).then(function () { closeShare(); toast(t("shareCopied")); }, function () {});
+    });
+  }
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeShare(); });
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-share]");
+    if (b) openShare(b);
   });
+
+  // ---------- Listening ----------
+  // Reads the open passage verse by verse with the phone's own voice, highlights the verse and keeps it in view.
+  var RATES = [0.8, 1, 1.25];
+  var listen = { on: false, idx: 0, verses: [], lang: "en", token: 0 };
+  function canListen() { return "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function"; }
+  function rate() { var r = db.settings.rate; return RATES.indexOf(r) >= 0 ? r : 1; }
+  function rateLabel() { return String(rate()).replace(/^0\./, "0.") + "×"; }
+  function pickVoice(lang) {
+    var vs = speechSynthesis.getVoices(), pre = lang === "ko" ? "ko" : "en";
+    var m = vs.filter(function (v) { return v.lang && v.lang.toLowerCase().indexOf(pre) === 0; });
+    return m.filter(function (v) { return v.localService; })[0] || m[0] || null;
+  }
+  function verseText(el) { var c = el.cloneNode(true), s = c.querySelector("sup"); if (s) s.remove(); return c.textContent.trim(); }
+  function markVerse(i) {
+    listen.verses.forEach(function (v, j) { v.classList.toggle("speaking", j === i); });
+    var v = listen.verses[i];
+    if (!v) return;
+    var r = v.getBoundingClientRect();
+    if (r.top < 140 || r.bottom > window.innerHeight - 120) {
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      v.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+  function speakFrom(i) {
+    var token = ++listen.token;
+    speechSynthesis.cancel();
+    listen.idx = i;
+    if (i >= listen.verses.length) { stopListening(); return; }
+    var u = new SpeechSynthesisUtterance(verseText(listen.verses[i]));
+    u.lang = listen.lang === "ko" ? "ko-KR" : "en-US";
+    var voice = pickVoice(listen.lang);
+    if (voice) u.voice = voice;
+    u.rate = rate();
+    u.onend = function () { if (listen.on && token === listen.token) speakFrom(i + 1); };
+    listen.on = true;
+    markVerse(i);
+    syncListen();
+    speechSynthesis.speak(u);
+  }
+  function startListening() {
+    var root = view.querySelector(".disc-body:not([hidden])");
+    if (!root) return;
+    listen.verses = [].slice.call(root.querySelectorAll(".verse"));
+    var l = root.querySelector("[lang]");
+    listen.lang = l ? l.getAttribute("lang") : "en";
+    speakFrom(0);
+  }
+  function pauseListening() { listen.on = false; listen.token++; speechSynthesis.cancel(); syncListen(); }
+  function stopListening() {
+    if (!canListen()) return;
+    listen.on = false; listen.token++; speechSynthesis.cancel();
+    listen.verses.forEach(function (v) { v.classList.remove("speaking"); });
+    listen.verses = []; listen.idx = 0;
+    syncListen();
+  }
+  function toggleListening() {
+    if (listen.on) pauseListening();
+    else if (listen.verses.length && document.body.contains(listen.verses[0])) speakFrom(listen.idx);
+    else startListening();
+  }
+  function syncListen() {
+    var label = t(listen.on ? "pause" : "listen");
+    document.querySelectorAll("[data-listen]").forEach(function (b) {
+      b.innerHTML = (listen.on ? icons.pauseLine : icons.speaker) + "<span>" + esc(label) + "</span>";
+    });
+    document.querySelectorAll("[data-listen-toggle]").forEach(function (b) {
+      b.innerHTML = listen.on ? icons.pause : icons.play;
+      b.setAttribute("aria-label", label);
+    });
+    document.querySelectorAll("[data-speed]").forEach(function (b) { b.textContent = rateLabel(); });
+  }
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest) return;
+    if (e.target.closest("[data-listen], [data-listen-toggle]")) { toggleListening(); return; }
+    if (e.target.closest("[data-speed]")) {
+      db.settings.rate = RATES[(RATES.indexOf(rate()) + 1) % RATES.length]; save();
+      if (listen.on) speakFrom(listen.idx); else syncListen();
+    }
+  });
+  if (canListen() && speechSynthesis.addEventListener) speechSynthesis.addEventListener("voiceschanged", function () {});
 
   // ---------- Router ----------
   function render() {
@@ -933,6 +1058,7 @@
     return renderToday();
   }
   window.addEventListener("hashchange", function () {
+    stopListening();
     toTop.hidden = true;
     if (location.hash.indexOf("#/pick") !== 0) ui.pickBook = null;
     if (location.hash.indexOf("#/settings") !== 0) ui.resetOpen = false;

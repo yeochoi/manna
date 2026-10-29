@@ -7,5 +7,5 @@ The summary on Today and a past day. The first section under the title.
 - Three points in `body`, each led by a plain number in `green-text` `title`. No badges.
 - The key verse label in `small` `muted` names the chapter and verse, the verse itself in `body` is quoted from local data.
 - The key message sits in a `soft` box with `radius-note`. The box says what it is, so it has no visible label. A hidden label stays for screen readers.
-- A green Share text button sits right under the key message, with a 20 share icon. It shares only the key verse and key message, as one picture card in Manna's style and nothing else, so a chat shows a single message. The card carries the Manna address. On a computer it copies the text instead.
+- The key verse and key message form one block, with 12 extra space after the points. A short secondary Share button closes the block. Tapping it shows the picture card in a preview sheet, then the phone's share sheet sends the card and nothing else.
 - While the AI works, three grey loading bars on `chip` take the place of the points.
