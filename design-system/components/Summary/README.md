@@ -1,11 +1,9 @@
 # Summary
 
-The summary on Today and a past day. The first section under the title.
+Today and a past day open with three sections, Summary, Key verse and Passage.
 
-- A `section` header in ink, then the content right on the ground. No card.
-- Summary includes the points, the key verse and the key message, with no divider inside. 20 between each part.
-- Three points in `body`, each led by a plain number in `green-text` `title`. No badges.
-- The key verse label in `small` `muted` names the chapter and verse, the verse itself in `body` is quoted from local data.
-- The key message sits in a `soft` box with `radius-note`. The box says what it is, so it has no visible label. A hidden label stays for screen readers.
-- The key verse and key message form one block, with 12 extra space after the points. A short secondary Share button closes the block. Tapping it shows the picture card in a preview sheet, then the phone's share sheet sends the card and nothing else.
+- **Summary.** A `section` header, then three points in `body`, each led by a plain number in `green-text` `title`.
+- **Key verse.** A `section` header with a round share button 8 after the words. Then the verse in `body`, ending on the same line with its reference in `muted`, like a quote and its source. Then the key message in a `soft` box with `radius-note`, 12 below. The box says what it is, so it has no visible label. A hidden label stays for screen readers.
+- Share sends only the key verse and message, as a picture card in Manna's style. Tapping it shows the card in a preview sheet first.
+- Spacing is 12 inside a section and 32 before the next one.
 - While the AI works, three grey loading bars on `chip` take the place of the points.

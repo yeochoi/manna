@@ -121,7 +121,7 @@ a { color: var(--green-text); }
 
 /* Passage */
 /* Chapter names stand alone in green. Space between chapters does the separating, no lines. */
-.chapter-break { margin: 36px 0 8px; font-size: 17px; line-height: 22px; font-weight: 600; }
+.chapter-break { margin: 36px 0 14px; font-size: 17px; line-height: 22px; font-weight: 600; }
 .chapter-break span { font-size: 17px; line-height: 22px; font-weight: 600; color: var(--green-text); }
 .verse { margin: 0 0 14px; font-size: var(--reading-size); line-height: 1.75; }
 .verse sup { color: var(--green-text); font-size: 13px; font-weight: 400; margin-right: 4px; vertical-align: super; line-height: 0; }
@@ -492,12 +492,17 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
    Primary green fill for the one main action. Secondary white with a line for every other action.
    Round grey circle for icon only. Coral text for destructive. Sage is never a button, it only highlights.
    ============================================================ */
-.act-btn { width: auto; display: inline-flex; align-items: center; gap: 8px; padding: 0 22px; align-self: flex-start; }
+/* Inline actions are small, 44 tall, with 14 inside so the icon lines up with text inside boxes, like the key message. */
+.act-btn { width: auto; height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px 0 14px; align-self: flex-start; }
+.share-btn { margin-top: -8px; }
 .act-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
-.kv-group { margin-top: 12px; }
+.kv-group { margin-top: 0; }
 .listen-row { margin: 0 0 24px; }
 .disc-body[hidden] { display: none; }
-.verse.speaking { background: var(--soft); border-radius: 10px; box-shadow: 0 0 0 6px var(--soft); }
+/* Equal space on every side of the highlight. Negative margins keep the text exactly where it was. */
+/* The highlight is drawn behind the verse, so the text never moves. It reaches 4 above and fills the line space below, so the space around the words is even. */
+.verse { position: relative; z-index: 0; }
+.verse.speaking::before { content: ""; position: absolute; z-index: -1; left: -12px; right: -12px; top: -4px; bottom: 0; background: var(--soft); border-radius: 12px; }
 .bar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .bar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .play-btn { width: 44px; height: 44px; border-radius: 999px; border: 0; padding: 0; background: var(--primary); color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -514,3 +519,20 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
   .share-wrap { align-items: center; }
   .share-sheet { border-radius: 18px; padding-bottom: 24px; }
 }
+
+/* Spacing rhythm in the summary and passage. 12 inside a group, 24 between groups, 32 before a new section. */
+.kv-group + .message { margin-top: -8px; }
+.share-btn { margin-top: -8px; }
+.disc { margin-top: 32px; }
+.listen-row { margin: 0 0 24px; }
+
+/* Section heading with its icon action right after the words. The column gap is 20, so this gives 32 above and 12 below. */
+.head-row { display: flex; align-items: center; gap: 8px; }
+.head-row .section { margin: 0; }
+.head-row .round { margin: -9px 0; }
+.summary .kv-head { margin: 12px 0 -8px; }
+/* The reference ends the verse on the same line, in grey, the way a quote ends with its source. */
+.kv-group .verse-text { margin: 0; }
+.kv-ref { color: var(--muted); white-space: nowrap; }
+.disc-row { position: relative; }
+.listen-btn { position: absolute; top: 11px; left: 90px; }

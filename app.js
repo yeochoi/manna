@@ -221,13 +221,14 @@
     }
     var kv = verseLookup(data.key_verse, tr);
     if (kv) {
-      html += '<div class="kv-group"><div class="verse-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyVerse")) + " · " + esc(kv.label) + "</div>" +
-        (kv.text ? '<div class="verse-text">' + esc(kv.text) + "</div>" : "") + "</div>";
+      // Key verse is its own section. Share sits next to its heading, at the top of exactly what gets shared.
+      var shareBtn = '<button class="round share-btn" type="button" data-share data-ref="' + esc(data.key_verse || "") + '" data-verse="' + esc(kv.text || "") +
+        '" data-msg="' + esc(data.message || "") + '" data-lang="' + esc(lang) + '" aria-label="' + esc(t("shareSummary")) + '">' + icons.share + "</button>";
+      html += '<div class="head-row kv-head"><h2 class="section" lang="' + esc(db.settings.lang) + '">' + esc(t("keyVerse")) + "</h2>" + shareBtn + "</div>";
+      // The reference follows the verse, the way a quote ends with its source.
+      html += '<div class="kv-group"><p class="verse-text">' + (kv.text ? esc(kv.text) + " " : "") + '<span class="kv-ref">' + esc(data.key_verse || kv.label) + "</span></p></div>";
     }
     html += '<div class="message"><span class="message-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyMessage")) + '</span><span class="message-text">' + esc(data.message) + "</span></div>";
-    // Share the key verse and key message. A short secondary button at the end of the block it shares. Tapping it shows a preview first.
-    html += '<button class="btn secondary act-btn share-btn" type="button" data-share data-ref="' + esc(data.key_verse || "") + '" data-verse="' + esc(kv && kv.text ? kv.text : "") +
-      '" data-msg="' + esc(data.message || "") + '" data-lang="' + esc(lang) + '" aria-label="' + esc(t("shareSummary")) + '">' + icons.share + '<span aria-hidden="true">' + esc(t("share")) + "</span></button>";
     return html + "</div>";
   }
   function skeleton() {
@@ -379,9 +380,10 @@
   // One Passage row everywhere. Open while you read today, closed after and in the Journal.
   // keep renders the body even when closed, so it can open and close in place without losing your place.
   function disclosure(id, label, open, inner, keep) {
-    var body = inner ? (canListen() ? '<div class="listen-row"><button class="btn secondary act-btn" type="button" data-listen>' + icons.speaker + "<span>" + esc(t("listen")) + "</span></button></div>" : "") + inner : "";
-    return '<div class="card disc"><button class="disc-head" type="button" data-disc="' + id + '" aria-expanded="' + !!open + '" aria-controls="' + id + '-body"><span>' + esc(label) + "</span>" + (open ? icons.up : icons.down) + "</button>" +
-      (open || keep ? '<div class="disc-body" id="' + id + '-body"' + (open ? "" : " hidden") + ">" + body + "</div>" : "") + "</div>";
+    // Listen is its own button next to the title, separate from the row that opens and closes. Shown only while the passage is open.
+    var listenBtn = inner && canListen() ? '<button class="round listen-btn" type="button" data-listen aria-label="' + esc(t("listen")) + '"' + (open ? "" : " hidden") + ">" + icons.speaker + "</button>" : "";
+    return '<div class="card disc"><div class="disc-row"><button class="disc-head" type="button" data-disc="' + id + '" aria-expanded="' + !!open + '" aria-controls="' + id + '-body"><span>' + esc(label) + "</span>" + (open ? icons.up : icons.down) + "</button>" + listenBtn + "</div>" +
+      (open || keep ? '<div class="disc-body" id="' + id + '-body"' + (open ? "" : " hidden") + ">" + (inner || "") + "</div>" : "") + "</div>";
   }
 
   // ---------- Screens ----------
@@ -450,6 +452,7 @@
         html += disclosure("today", t("passage", { tr: trName(tr) }), ui.openPassage.today, inner);
         html += '<div class="done-area"><button class="btn secondary" type="button" id="readMore">' + esc(t("readMore", { n: db.settings.perDay })) + "</button></div></div></div></div>";
         view.innerHTML = html;
+        placeListen();
         teardownReadingBar();
         entries.forEach(function (e) {
           var sl = view.querySelector('[data-key="' + CSS.escape(rangeKey(e.chapters, e.mode || "together", tr)) + '"]');
@@ -471,6 +474,7 @@
       html += '</div><div class="col main">' + disclosure("read", t("passage", { tr: trName(tr) }), !ui.readClosed, passageHTML(chs, tr), true);
       html += '<div class="done-area"><button class="btn" type="button" id="done">' + esc(t("doneReading")) + "</button></div></div></div></div>";
       view.innerHTML = html;
+      placeListen();
       wireSummary(document.getElementById("summarySlot"), chs, mode, tr);
       setupReadingBar(chs);
       var rh = view.querySelector('[data-disc="read"]');
@@ -478,6 +482,8 @@
         ui.readClosed = !ui.readClosed;
         rh.setAttribute("aria-expanded", String(!ui.readClosed));
         document.getElementById("read-body").hidden = ui.readClosed;
+        var lbtn = rh.parentNode.querySelector(".listen-btn"); if (lbtn) lbtn.hidden = ui.readClosed;
+        placeListen();
         rh.querySelector("svg").outerHTML = ui.readClosed ? icons.down : icons.up;
         if (ui.readClosed) stopListening();
       };
@@ -599,6 +605,7 @@
         html += disclosure("d" + i, t("passage", { tr: trName(tr) }), open, open ? passageHTML(e.chapters, tr) : "");
       });
       view.innerHTML = html + "</div>";
+      placeListen();
       entries.forEach(function (e) {
         var sl = view.querySelector('[data-key="' + CSS.escape(rangeKey(e.chapters, e.mode || "together", tr)) + '"]');
         if (sl) wireSummary(sl, e.chapters, e.mode || "together", tr);
@@ -831,8 +838,9 @@
 
     h += '<div class="section">' + esc(d.summary) + '</div><div class="card pad summary"><ol class="points">' +
       '<li><span class="num">1</span><span>' + esc(sample.p1) + '</span></li><li><span class="num">2</span><span>' + esc(sample.p2) + "</span></li></ol>" +
-      '<div><div class="verse-label">' + esc(sample.kvl) + '</div><div class="verse-text">' + esc(sample.kv) + "</div></div>" +
-      '<div class="message"><span class="message-label">' + esc(sample.ml) + '</span><span class="message-text">' + esc(sample.msg) + '</span></div><span class="btn secondary act-btn">' + icons.share + "<span>" + esc(EN.share) + "</span></span></div>";
+      '<div class="head-row kv-head"><span class="section">' + esc(EN.keyVerse) + '</span><span class="round" aria-hidden="true">' + icons.share + "</span></div>" +
+      '<div class="kv-group"><p class="verse-text">' + esc(sample.kv) + ' <span class="kv-ref">1 Samuel 24:6</span></p></div>' +
+      '<div class="message"><span class="message-label">' + esc(sample.ml) + '</span><span class="message-text">' + esc(sample.msg) + "</span></div></div>";
 
     h += '<p class="note" style="margin:32px 0 0">' + esc(d.passage) + '</p><div class="card disc" style="margin-top:0"><div class="disc-head">' + esc(sample.pass) + icons.down + "</div></div>" +
       '<div class="card disc"><div class="disc-head">' + esc(sample.pass) + icons.up + '</div><div class="disc-body"><section class="chapter"><div class="chapter-break"><span>' + esc(sample.ch) + '</span></div><p class="verse"><sup>1</sup>' + esc(sample.v) + "</p></section></div></div>";
@@ -962,6 +970,15 @@
   });
 
   // ---------- Listening ----------
+  // Puts the listen icon 8 after the word Passage, whatever the language.
+  window.addEventListener("resize", function () { placeListen(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { placeListen(); });
+  function placeListen() {
+    view.querySelectorAll(".disc-row").forEach(function (r) {
+      var b = r.querySelector(".listen-btn"), sp = r.querySelector(".disc-head span");
+      if (b && sp) b.style.left = sp.offsetWidth + 8 + "px";
+    });
+  }
   // Reads the open passage verse by verse with the phone's own voice, highlights the verse and keeps it in view.
   var RATES = [0.8, 1, 1.25];
   var listen = { on: false, idx: 0, verses: [], lang: "en", token: 0 };
@@ -1024,7 +1041,8 @@
   function syncListen() {
     var label = t(listen.on ? "pause" : "listen");
     document.querySelectorAll("[data-listen]").forEach(function (b) {
-      b.innerHTML = (listen.on ? icons.pauseLine : icons.speaker) + "<span>" + esc(label) + "</span>";
+      b.innerHTML = listen.on ? icons.pauseLine : icons.speaker;
+      b.setAttribute("aria-label", label);
     });
     document.querySelectorAll("[data-listen-toggle]").forEach(function (b) {
       b.innerHTML = listen.on ? icons.pause : icons.play;
@@ -1034,7 +1052,12 @@
   }
   document.addEventListener("click", function (e) {
     if (!e.target.closest) return;
-    if (e.target.closest("[data-listen], [data-listen-toggle]")) { toggleListening(); return; }
+    var lb = e.target.closest("[data-listen], [data-listen-toggle]");
+    if (lb) {
+      // A tap or click doesn't leave a focus ring behind. Keyboard users keep focus on the button.
+      if (e.detail > 0) lb.blur();
+      toggleListening(); return;
+    }
     if (e.target.closest("[data-speed]")) {
       db.settings.rate = RATES[(RATES.indexOf(rate()) + 1) % RATES.length]; save();
       if (listen.on) speakFrom(listen.idx); else syncListen();
