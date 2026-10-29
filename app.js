@@ -289,9 +289,11 @@
   }
 
   // ---------- Passage ----------
-  function passageHTML(chs, tr) {
+  // start numbers the chapters when one page shows several passages, so every chapter id stays unique.
+  function passageHTML(chs, tr, start) {
+    start = start || 0;
     return '<div lang="' + trLang(tr) + '">' + sections(chs, tr).map(function (s, i) {
-      return '<section class="chapter" id="ch-' + i + '"><h2 class="chapter-break"><span>' + esc(chapterLabel(s.book, s.chapter)) + "</span></h2>" +
+      return '<section class="chapter" id="ch-' + (start + i) + '"><h2 class="chapter-break"><span>' + esc(chapterLabel(s.book, s.chapter)) + "</span></h2>" +
         s.verses.map(function (v, j) { return '<p class="verse"><sup>' + (j + 1) + "</sup>" + esc(v) + "</p>"; }).join("") + "</section>";
     }).join("") + "</div>";
   }
@@ -307,7 +309,8 @@
       '<div class="progress" style="grid-template-columns:repeat(' + n + ',minmax(0,1fr))">' +
       Array.apply(null, Array(n)).map(function () { return '<div><b style="width:0"></b></div>'; }).join("") + "</div>";
   }
-  function setupReadingBar(chs) {
+  // anchor is what has to scroll away before the bar slides in. Today uses the page header, other pages use the passage row.
+  function setupReadingBar(chs, anchor) {
     teardownReadingBar();
     bar.innerHTML = '<div class="inner">' + progressHTML(chs.length) + "</div>";
     var side = document.getElementById("sideProgress");
@@ -316,19 +319,20 @@
     var ticking = false;
     function update() {
       ticking = false;
-      var top = document.querySelector(".top");
+      var top = document.querySelector(anchor || ".top");
       var show = top && top.getBoundingClientRect().bottom < 0;
       bar.classList.toggle("show", !!show);
       bar.inert = !show;
       // The bar repeats the chapter headings in the passage, so screen readers skip it.
       // The reading line sits at 35% of the screen. Near the end of the page it slides down to the bottom,
       // so scrolling to the end always fills the last chapter.
-      var vh = window.innerHeight, current = 0;
+      var vh = window.innerHeight, current = 0, first = -1;
       var left = document.documentElement.scrollHeight - vh - window.scrollY;
       var line = vh - Math.max(0, Math.min(vh * 0.65, left));
       for (var i = 0; i < chs.length; i++) {
         var el = document.getElementById("ch-" + i);
-        if (!el) return;
+        if (!el) continue;
+        if (first < 0) first = current = i;
         var r = el.getBoundingClientRect();
         if (r.top < line) current = i;
         var p = (line - r.top) / Math.max(1, r.height);
@@ -452,12 +456,14 @@
           html += '<div id="' + (isLast ? "summarySlot" : "s" + idx) + '" data-key="' + esc(rangeKey(e.chapters, m, tr)) + '">' + summaryBlock(e.chapters, m, tr) + "</div>";
         });
         html += '</div><div class="col main">';
-        var inner = ui.openPassage.today ? entries.map(function (e) { return passageHTML(e.chapters, tr); }).join("") : "";
+        var n0 = 0;
+        var inner = ui.openPassage.today ? entries.map(function (e) { var h = passageHTML(e.chapters, tr, n0); n0 += e.chapters.length; return h; }).join("") : "";
         html += disclosure("today", t("passage", { tr: trName(tr) }), ui.openPassage.today, inner);
         html += '<div class="done-area"><button class="btn secondary" type="button" id="readMore">' + esc(t("readMore", { n: db.settings.perDay })) + "</button></div></div></div></div>";
         view.innerHTML = html;
         placeListen();
-        teardownReadingBar();
+        // Listening needs its controls, so the bar comes back whenever the passage is open.
+        if (ui.openPassage.today) setupReadingBar(allChs, ".disc-row"); else teardownReadingBar();
         entries.forEach(function (e) {
           var sl = view.querySelector('[data-key="' + CSS.escape(rangeKey(e.chapters, e.mode || "together", tr)) + '"]');
           if (sl) wireSummary(sl, e.chapters, e.mode || "together", tr);
@@ -602,14 +608,18 @@
         return;
       }
       html += '<h1 class="answer" style="margin-top:20px">' + esc(rangeLabel(allChs)) + "</h1>";
+      var n0 = 0, anyOpen = false;
       entries.forEach(function (e, i) {
         html += '<div class="section">' + esc(entries.length > 1 ? rangeLabel(e.chapters) : t("summary")) + "</div>";
         html += '<div class="slot" data-key="' + esc(rangeKey(e.chapters, e.mode || "together", tr)) + '">' + summaryBlock(e.chapters, e.mode || "together", tr) + '</div>';
         var open = ui.openPassage[key + i];
-        html += disclosure("d" + i, t("passage", { tr: trName(tr) }), open, open ? passageHTML(e.chapters, tr) : "");
+        html += disclosure("d" + i, t("passage", { tr: trName(tr) }), open, open ? passageHTML(e.chapters, tr, n0) : "");
+        n0 += e.chapters.length;
+        if (open) anyOpen = true;
       });
       view.innerHTML = html + "</div>";
       placeListen();
+      if (anyOpen) setupReadingBar(allChs, ".disc-row:has([aria-expanded=true])");
       entries.forEach(function (e) {
         var sl = view.querySelector('[data-key="' + CSS.escape(rangeKey(e.chapters, e.mode || "together", tr)) + '"]');
         if (sl) wireSummary(sl, e.chapters, e.mode || "together", tr);
