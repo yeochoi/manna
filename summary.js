@@ -15,17 +15,17 @@
       ].join("\n"),
       together: [
         "다음 형식의 JSON으로 답해.",
-        '{"points":["한 문장","한 문장","한 문장"],"key_verse":"사무엘상 25:32","message":"한두 문장"}',
+        '{"points":["한 문장","한 문장","한 문장"],"message":"한두 문장","key_verse":"사무엘상 25:32"}',
         "points는 오늘 읽은 본문 전체의 흐름을 순서대로 담은 쉬운 한 문장 요약 3개야.",
-        "key_verse는 가장 중심이 되는 구절 하나의 위치를 '책이름 장:절' 형식으로 써. 구절 내용은 쓰지 마.",
-        "message는 핵심 메시지야. 오늘 본문이 읽는 사람에게 주는 메시지를 한두 문장으로 써."
+        "key_verse는 먼저 message를 정한 뒤, 오늘 읽은 장 안에서 그 메시지를 가장 직접적으로 보여주는 구절 하나를 골라 '책이름 장:절' 형식으로 써. 앞뒤 문맥 없이 혼자 읽어도 뜻이 통하고 너무 길지 않은 구절이어야 해. 구절 내용은 쓰지 마.",
+        "message는 핵심 메시지야. 오늘 읽은 장 전체가 읽는 사람에게 주는 메시지를 한두 문장으로 써. '오늘 본문은', '이 말씀은' 같은 표현 없이, 메시지만 읽어도 뜻이 통하게 써."
       ].join("\n"),
       each: [
         "다음 형식의 JSON으로 답해.",
-        '{"chapters":[{"title":"사무엘상 25장","points":["한 문장","한 문장"]}],"key_verse":"사무엘상 25:32","message":"한두 문장"}',
+        '{"chapters":[{"title":"사무엘상 25장","points":["한 문장","한 문장"]}],"message":"한두 문장","key_verse":"사무엘상 25:32"}',
         "chapters에는 장마다 하나씩, points는 장마다 1~2개의 쉬운 한 문장 요약이야.",
-        "key_verse는 오늘 본문 전체에서 가장 중심이 되는 구절 하나의 위치를 '책이름 장:절' 형식으로 써. 구절 내용은 쓰지 마.",
-        "message는 핵심 메시지야. 오늘 본문이 읽는 사람에게 주는 메시지를 한두 문장으로 써."
+        "key_verse는 먼저 message를 정한 뒤, 오늘 읽은 장 안에서 그 메시지를 가장 직접적으로 보여주는 구절 하나를 골라 '책이름 장:절' 형식으로 써. 앞뒤 문맥 없이 혼자 읽어도 뜻이 통하고 너무 길지 않은 구절이어야 해. 구절 내용은 쓰지 마.",
+        "message는 핵심 메시지야. 오늘 읽은 장 전체가 읽는 사람에게 주는 메시지를 한두 문장으로 써. '오늘 본문은', '이 말씀은' 같은 표현 없이, 메시지만 읽어도 뜻이 통하게 써."
       ].join("\n"),
       header: "오늘 읽은 본문",
       chapterLabel: function (book, c) { return book + " " + c + "장"; }
@@ -40,17 +40,17 @@
       ].join("\n"),
       together: [
         "Answer with JSON in this shape.",
-        '{"points":["one sentence","one sentence","one sentence"],"key_verse":"1 Samuel 25:32","message":"one or two sentences"}',
+        '{"points":["one sentence","one sentence","one sentence"],"message":"one or two sentences","key_verse":"1 Samuel 25:32"}',
         "points are three simple one sentence summaries that follow the flow of today's whole passage in order.",
-        "key_verse is the location of the single most central verse, written as 'Book chapter:verse'. Do not write the verse text.",
-        "message is the key message. In one or two sentences, say what today's passage means for the reader."
+        "key_verse comes after you decide the message. Pick the one verse from today's chapters that most directly expresses that message, written as 'Book chapter:verse'. It must make sense on its own, without the verses around it, and should not be long. Do not write the verse text.",
+        "message is the key message. In one or two sentences, say what today's chapters as a whole mean for the reader. Do not refer to 'today's reading' or 'this passage', so the message makes sense on its own."
       ].join("\n"),
       each: [
         "Answer with JSON in this shape.",
-        '{"chapters":[{"title":"1 Samuel 25","points":["one sentence","one sentence"]}],"key_verse":"1 Samuel 25:32","message":"one or two sentences"}',
+        '{"chapters":[{"title":"1 Samuel 25","points":["one sentence","one sentence"]}],"message":"one or two sentences","key_verse":"1 Samuel 25:32"}',
         "chapters has one entry per chapter, each with one or two simple one sentence summaries.",
-        "key_verse is the location of the single most central verse in today's whole passage, written as 'Book chapter:verse'. Do not write the verse text.",
-        "message is the key message. In one or two sentences, say what today's passage means for the reader."
+        "key_verse comes after you decide the message. Pick the one verse from today's chapters that most directly expresses that message, written as 'Book chapter:verse'. It must make sense on its own, without the verses around it, and should not be long. Do not write the verse text.",
+        "message is the key message. In one or two sentences, say what today's chapters as a whole mean for the reader. Do not refer to 'today's reading' or 'this passage', so the message makes sense on its own."
       ].join("\n"),
       header: "Today's passage",
       chapterLabel: function (book, c) { return book + " " + c; }
