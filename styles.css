@@ -547,3 +547,8 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
 .summary .kv-head { margin: 12px 0 -5px; }
 .listen-btn { top: 17px; }
 .disc-row:has(.listen-btn:not([hidden])) .disc-head { padding-bottom: 15px; }
+
+/* Text size from Settings applies to everything you read, the passage and the summary.
+   Line height keeps the same ratio as 17 on 24, and the numbers grow with the points. */
+.summary .points li, .summary .num, .summary .verse-text, .summary .message-text { font-size: var(--reading-size); line-height: 1.41; }
+.summary .num { width: auto; min-width: 14px; }
