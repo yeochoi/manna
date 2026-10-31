@@ -171,23 +171,90 @@
   };
   // Phones show tabs at the bottom only on the main screens.
   // Laptops always show them as a top bar with the app name.
+  // On phones a pill sits behind the selected tab. It slides when you tap, and you can drag it from one tab to the other.
+  var tabsSig = "", pillWasHidden = true;
+  function tabLinks() { return Array.prototype.slice.call(tabs.querySelectorAll("a[data-tab]")); }
+  function placePill(active, instant) {
+    var pill = tabs.querySelector(".tab-pill"), a = tabs.querySelector('a[data-tab="' + active + '"]');
+    if (!pill || !a || !a.offsetWidth) { pillWasHidden = true; return; }
+    if (instant || pillWasHidden) { pill.classList.add("instant"); void pill.offsetWidth; }
+    pill.style.transform = "translateX(" + a.offsetLeft + "px)";
+    pill.style.width = a.offsetWidth + "px";
+    if (instant || pillWasHidden) { void pill.offsetWidth; pill.classList.remove("instant"); }
+    pillWasHidden = false;
+  }
   function renderTabs(active) {
     tabs.className = "tabs" + (active ? "" : " hide-m");
     tabs.setAttribute("aria-label", t("menu"));
-    tabs.innerHTML = '<div class="inner"><a class="brand" href="#/today">Manna</a>' +
-      '<a href="#/today"' + (active === "today" ? ' aria-current="page"' : "") + ">" + icons.book + "<span>" + esc(t("tabToday")) + "</span></a>" +
-      '<a href="#/record"' + (active === "record" ? ' aria-current="page"' : "") + ">" + icons.cal + "<span>" + esc(t("tabRecord")) + "</span></a></div>";
-    // Tapping the tab you are already on scrolls back to the top.
-    Array.prototype.forEach.call(tabs.querySelectorAll("a"), function (a) {
-      a.onclick = function (e) {
-        var here = location.hash || "#/today";
-        if (a.getAttribute("href") !== here) return;
-        e.preventDefault();
-        var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        window.scrollTo({ top: 0, behavior: calm ? "auto" : "smooth" });
-      };
+    var sig = t("tabToday") + "|" + t("tabRecord");
+    if (sig !== tabsSig) {
+      tabsSig = sig;
+      tabs.innerHTML = '<div class="inner"><span class="tab-pill" aria-hidden="true"></span><a class="brand" href="#/today">Manna</a>' +
+        '<a data-tab="today" href="#/today">' + icons.book + "<span>" + esc(t("tabToday")) + "</span></a>" +
+        '<a data-tab="record" href="#/record">' + icons.cal + "<span>" + esc(t("tabRecord")) + "</span></a></div>";
+      pillWasHidden = true;
+      // Tapping the tab you are already on scrolls back to the top.
+      Array.prototype.forEach.call(tabs.querySelectorAll("a"), function (a) {
+        a.onclick = function (e) {
+          if (tabDrag.skip) { e.preventDefault(); tabDrag.skip = false; return; }
+          var here = location.hash || "#/today";
+          if (a.getAttribute("href") !== here) return;
+          e.preventDefault();
+          var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          window.scrollTo({ top: 0, behavior: calm ? "auto" : "smooth" });
+        };
+      });
+    }
+    tabLinks().forEach(function (a) {
+      if (a.getAttribute("data-tab") === active) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
+    if (active) placePill(active); else pillWasHidden = true;
   }
+  var tabDrag = { on: false, moved: false, x: 0, id: 0, skip: false };
+  function nearestTab(x) {
+    var best = null, d = Infinity;
+    tabLinks().forEach(function (a) { var r = a.getBoundingClientRect(), dd = Math.abs(x - (r.left + r.width / 2)); if (dd < d) { d = dd; best = a; } });
+    return best;
+  }
+  tabs.addEventListener("pointerdown", function (e) {
+    tabDrag.skip = false;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    tabDrag.on = true; tabDrag.moved = false; tabDrag.x = e.clientX; tabDrag.id = e.pointerId;
+  });
+  tabs.addEventListener("pointermove", function (e) {
+    if (!tabDrag.on) return;
+    var pill = tabs.querySelector(".tab-pill"), ls = tabLinks();
+    if (!pill || !ls.length) return;
+    if (!tabDrag.moved) {
+      if (Math.abs(e.clientX - tabDrag.x) < 6) return;
+      tabDrag.moved = true;
+      try { tabs.setPointerCapture(tabDrag.id); } catch (err) {}
+      pill.classList.add("dragging");
+    }
+    var w = pill.offsetWidth, inner = tabs.querySelector(".inner").getBoundingClientRect();
+    var first = ls[0], last = ls[ls.length - 1];
+    var x = Math.max(first.offsetLeft, Math.min(last.offsetLeft + last.offsetWidth - w, e.clientX - inner.left - w / 2));
+    pill.style.transform = "translateX(" + x + "px)";
+    var near = nearestTab(e.clientX);
+    ls.forEach(function (a) { a.classList.toggle("hover", a === near); });
+  });
+  function endTabDrag(e) {
+    if (!tabDrag.on) return;
+    tabDrag.on = false;
+    if (!tabDrag.moved) return;
+    tabDrag.skip = true;
+    setTimeout(function () { tabDrag.skip = false; }, 0);
+    var pill = tabs.querySelector(".tab-pill");
+    if (pill) pill.classList.remove("dragging");
+    tabLinks().forEach(function (a) { a.classList.remove("hover"); });
+    var near = nearestTab(e.clientX);
+    if (!near) return;
+    placePill(near.getAttribute("data-tab"));
+    if (near.getAttribute("href") !== (location.hash || "#/today")) location.hash = near.getAttribute("href");
+  }
+  tabs.addEventListener("pointerup", endTabDrag);
+  tabs.addEventListener("pointercancel", endTabDrag);
+  window.addEventListener("resize", function () { var a = tabs.querySelector('a[aria-current="page"]'); if (a) placePill(a.getAttribute("data-tab"), true); });
   function applyFont() { document.documentElement.style.setProperty("--reading-size", db.settings.fontSize + "px"); }
   function showLoadError() {
     view.innerHTML = '<div class="content"><p class="warn" style="margin-top:40px">' + esc(t("loadError")) + "</p></div>";
@@ -947,9 +1014,39 @@
   var shareSheet = null, shareFrom = null;
   function closeShare() {
     if (!shareSheet) return;
-    shareSheet.remove(); shareSheet = null;
+    var el = shareSheet;
+    shareSheet = null;
+    el.classList.add("leaving");
+    setTimeout(function () { el.remove(); }, 300);
     document.body.style.overflow = "";
     if (shareFrom) shareFrom.focus();
+  }
+  // Pull the grabber or the title down to close, like iOS.
+  function dragToClose(wrap) {
+    var sheet = wrap.querySelector(".share-sheet"), grab = wrap.querySelector(".share-grab");
+    var d = null;
+    grab.addEventListener("pointerdown", function (e) {
+      if (e.target.closest("button") || !window.matchMedia("(max-width: 899px)").matches) return;
+      d = { y: e.clientY, t: performance.now(), dy: 0 };
+      try { grab.setPointerCapture(e.pointerId); } catch (err) {}
+      sheet.classList.add("dragging");
+    });
+    grab.addEventListener("pointermove", function (e) {
+      if (!d) return;
+      var dy = e.clientY - d.y;
+      d.dy = dy > 0 ? dy : dy / 6;
+      sheet.style.transform = "translateY(" + d.dy + "px)";
+    });
+    function up() {
+      if (!d) return;
+      var fast = d.dy / Math.max(1, performance.now() - d.t) > 0.6, dy = d.dy;
+      d = null;
+      sheet.classList.remove("dragging");
+      if (dy > 120 || (fast && dy > 40)) closeShare();
+      else sheet.style.transform = "";
+    }
+    grab.addEventListener("pointerup", up);
+    grab.addEventListener("pointercancel", up);
   }
   function openShare(b) {
     var d = { ref: b.getAttribute("data-ref"), verse: b.getAttribute("data-verse"), msg: b.getAttribute("data-msg"), lang: b.getAttribute("data-lang") };
@@ -963,10 +1060,11 @@
     shareSheet = document.createElement("div");
     shareSheet.className = "share-wrap";
     shareSheet.innerHTML = '<div class="share-sheet" role="dialog" aria-modal="true" aria-labelledby="shareTitle">' +
-      '<div class="share-head"><button class="round" type="button" data-close aria-label="' + esc(t("close")) + '">' + icons.x + '</button><h2 class="share-title" id="shareTitle">' + esc(t("share")) + "</h2><span></span></div>" +
+      '<div class="share-grab"><span class="grabber" aria-hidden="true"></span><div class="share-head"><button class="round" type="button" data-close aria-label="' + esc(t("close")) + '">' + icons.x + '</button><h2 class="share-title" id="shareTitle">' + esc(t("share")) + "</h2><span></span></div></div>" +
       (src ? '<img class="share-img" src="' + src + '" alt="' + esc(d.ref + ". " + d.verse + " " + d.label + ". " + d.msg) + '">' : '<p class="share-text-preview">' + esc(full).replace(/\n/g, "<br>") + "</p>") +
       '<button class="btn" type="button" data-send>' + esc(t("share")) + "</button></div>";
     document.body.appendChild(shareSheet);
+    dragToClose(shareSheet);
     document.body.style.overflow = "hidden";
     shareSheet.querySelector("[data-close]").focus();
     shareSheet.addEventListener("click", function (e) {
@@ -1095,7 +1193,46 @@
     }
     return renderToday();
   }
+  // Going deeper slides the new page in from the right, going back slides it out to the right, like iOS.
+  // Switching tabs stays still. Only on phones.
+  function depth(h) {
+    h = h || "#/today";
+    if (h.indexOf("#/design") === 0 || h.indexOf("#/pick") === 0) return 2;
+    if (h.indexOf("#/day/") === 0 || h.indexOf("#/settings") === 0) return 1;
+    return 0;
+  }
+  var curHash = location.hash || "#/today", slideTimer = 0;
+  function slidePages(from, to) {
+    var dir = to > from ? "fwd" : to < from ? "back" : "";
+    var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var phone = window.matchMedia && window.matchMedia("(max-width: 899px)").matches;
+    if (!dir || calm || !phone || !view.firstChild) return "";
+    var old = document.querySelector(".page-ghost");
+    if (old) old.remove();
+    var ghost = view.cloneNode(true);
+    ghost.removeAttribute("id");
+    ghost.className = "screen page-ghost out-" + dir;
+    ghost.style.top = -window.scrollY + "px";
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.setAttribute("inert", "");
+    document.body.appendChild(ghost);
+    return dir;
+  }
+  function slideIn(dir) {
+    if (!dir) return;
+    clearTimeout(slideTimer);
+    view.classList.add("in-" + dir);
+    slideTimer = setTimeout(function () {
+      view.classList.remove("in-fwd", "in-back");
+      var g = document.querySelector(".page-ghost");
+      if (g) g.remove();
+    }, 460);
+  }
+
   window.addEventListener("hashchange", function () {
+    var to = location.hash || "#/today";
+    var dir = slidePages(depth(curHash), depth(to));
+    curHash = to;
     stopListening();
     toTop.hidden = true;
     if (location.hash.indexOf("#/pick") !== 0) ui.pickBook = null;
@@ -1103,6 +1240,7 @@
     if (toastEl.querySelector("button")) toastEl.innerHTML = "";
     window.scrollTo(0, 0);
     render();
+    slideIn(dir);
   });
 
   // A new day while the page stays open

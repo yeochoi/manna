@@ -552,3 +552,54 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
    Line height keeps the same ratio as 17 on 24, and the numbers grow with the points. */
 .summary .points li, .summary .num, .summary .verse-text, .summary .message-text { font-size: var(--reading-size); line-height: 1.41; }
 .summary .num { width: auto; min-width: 14px; }
+
+/* ============================================================
+   Motion, like iOS. The same in Stay Counter, Shuo and Manna.
+   Going deeper slides left, going back slides right. Switching tabs stays still.
+   The tab pill slides and can be dragged. The share sheet rises and can be pulled down.
+   ============================================================ */
+:root { --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1); --ease-spring: cubic-bezier(0.34, 1.36, 0.5, 1); }
+
+.tabs .tab-pill { display: none; }
+@media (max-width: 899px) {
+  .tabs { touch-action: none; user-select: none; -webkit-user-select: none; }
+  .tabs .inner { position: relative; }
+  .tabs .tab-pill { display: block; position: absolute; left: 0; top: 6px; bottom: 6px; border-radius: 999px; background: var(--selected); pointer-events: none; transition: transform 0.5s var(--ease-spring), width 0.5s var(--ease-spring), scale 0.2s ease-out; }
+  .tabs .tab-pill.instant { transition: none; }
+  .tabs .tab-pill.dragging { transition: scale 0.2s ease-out; scale: 1.08; }
+  .tabs a:not(.brand) { position: relative; z-index: 1; transition: color 0.2s; }
+  .tabs a[aria-current="page"] { background: none; }
+  .tabs a.hover { color: var(--green-text); }
+
+  .page-ghost { position: fixed; left: 0; right: 0; min-height: 100vh; background: var(--bg); pointer-events: none; }
+  .page-ghost.out-fwd { z-index: 4; animation: page-out-fwd 0.45s var(--ease-sheet) forwards; }
+  .page-ghost.out-back { z-index: 6; box-shadow: -10px 0 30px rgba(28, 33, 30, 0.12); animation: page-out-back 0.45s var(--ease-sheet) forwards; }
+  .screen.in-fwd { position: relative; z-index: 5; background: var(--bg); box-shadow: -10px 0 30px rgba(28, 33, 30, 0.12); animation: page-in-fwd 0.45s var(--ease-sheet); }
+  .screen.in-back { position: relative; z-index: 5; background: var(--bg); animation: page-in-back 0.45s var(--ease-sheet); }
+}
+@keyframes page-in-fwd { from { transform: translateX(100%); } }
+@keyframes page-out-fwd { to { transform: translateX(-30%); opacity: 0.4; } }
+@keyframes page-in-back { from { transform: translateX(-30%); opacity: 0.4; } }
+@keyframes page-out-back { to { transform: translateX(100%); } }
+
+.share-wrap { animation: share-dim 0.3s ease-out; }
+.share-sheet { animation: share-up 0.5s var(--ease-sheet); transition: transform 0.3s var(--ease-sheet); }
+.share-sheet.dragging { transition: none; }
+.share-wrap.leaving { animation: share-undim 0.3s ease-in forwards; pointer-events: none; }
+.share-wrap.leaving .share-sheet { animation: share-down 0.3s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.share-grab { touch-action: none; }
+.grabber { display: block; width: 36px; height: 5px; border-radius: 999px; background: #D9D5CE; margin: 0 auto 2px; }
+@keyframes share-dim { from { background-color: transparent; } }
+@keyframes share-undim { to { background-color: transparent; } }
+@keyframes share-up { from { transform: translateY(100%); } }
+@keyframes share-down { to { transform: translateY(105%); } }
+@media (min-width: 900px) {
+  .grabber { display: none; }
+  .share-sheet { animation: share-pop 0.28s var(--ease-sheet); }
+  .share-wrap.leaving .share-sheet { animation: share-pop-out 0.2s ease-in forwards; }
+  @keyframes share-pop { from { transform: translateY(16px); opacity: 0; } }
+  @keyframes share-pop-out { to { transform: translateY(16px); opacity: 0; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabs .tab-pill, .share-sheet, .share-wrap { transition: none !important; animation: none !important; }
+}
