@@ -167,6 +167,7 @@
     up: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#878394" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>',
     x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     book: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M9 7h6"/></svg>',
+    gearTab: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
     cal: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>'
   };
   // Phones show tabs at the bottom only on the main screens.
@@ -186,12 +187,13 @@
   function renderTabs(active) {
     tabs.className = "tabs" + (active ? "" : " hide-m");
     tabs.setAttribute("aria-label", t("menu"));
-    var sig = t("tabToday") + "|" + t("tabRecord");
+    var sig = t("tabToday") + "|" + t("tabRecord") + "|" + t("settings");
     if (sig !== tabsSig) {
       tabsSig = sig;
       tabs.innerHTML = '<div class="inner"><span class="tab-pill" aria-hidden="true"></span><a class="brand" href="#/today">Manna</a>' +
         '<a data-tab="today" href="#/today">' + icons.book + "<span>" + esc(t("tabToday")) + "</span></a>" +
-        '<a data-tab="record" href="#/record">' + icons.cal + "<span>" + esc(t("tabRecord")) + "</span></a></div>";
+        '<a data-tab="record" href="#/record">' + icons.cal + "<span>" + esc(t("tabRecord")) + "</span></a>" +
+        '<a data-tab="settings" href="#/settings">' + icons.gearTab + "<span>" + esc(t("settings")) + "</span></a></div>";
       pillWasHidden = true;
       // Tapping the tab you are already on scrolls back to the top.
       Array.prototype.forEach.call(tabs.querySelectorAll("a"), function (a) {
@@ -280,22 +282,22 @@
   }
   function summaryHTML(data, tr) {
     var lang = trLang(tr);
+    // The key message comes first, in one plain sentence. Then the key verse. The easy summary waits one tap away.
     var html = '<div class="summary" lang="' + lang + '">';
-    if (data.chapters) {
-      data.chapters.forEach(function (c) { html += '<div class="chapter-title">' + esc(c.title) + "</div>" + pointsHTML(c.points); });
-    } else {
-      html += pointsHTML(data.points);
-    }
+    html += '<div class="message"><span class="message-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyMessage")) + '</span><span class="message-text">' + esc(data.message) + "</span></div>";
     var kv = verseLookup(data.key_verse, tr);
     if (kv) {
-      // Key verse is its own section. Share sits next to its heading, at the top of exactly what gets shared.
       var shareBtn = '<button class="round share-btn" type="button" data-share data-ref="' + esc(data.key_verse || "") + '" data-verse="' + esc(kv.text || "") +
         '" data-msg="' + esc(data.message || "") + '" data-lang="' + esc(lang) + '" aria-label="' + esc(t("shareSummary")) + '">' + icons.share + "</button>";
-      html += '<div class="head-row kv-head"><h2 class="section" lang="' + esc(db.settings.lang) + '">' + esc(t("keyVerse")) + "</h2>" + shareBtn + "</div>";
-      // The reference follows the verse, the way a quote ends with its source.
-      html += '<div class="kv-group"><p class="verse-text">' + (kv.text ? esc(kv.text) + " " : "") + '<span class="kv-ref">' + esc(data.key_verse || kv.label) + "</span></p></div>";
+      html += '<div class="kv-group"><p class="verse-text">' + (kv.text ? esc(kv.text) : "") + '</p><div class="kv-row"><span class="kv-ref">' + esc(data.key_verse || kv.label) + "</span>" + shareBtn + "</div></div>";
     }
-    html += '<div class="message"><span class="message-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyMessage")) + '</span><span class="message-text">' + esc(data.message) + "</span></div>";
+    var pts = "";
+    if (data.chapters) {
+      data.chapters.forEach(function (c) { pts += '<div class="chapter-title">' + esc(c.title) + "</div>" + pointsHTML(c.points); });
+    } else {
+      pts += pointsHTML(data.points);
+    }
+    html += '<details class="easy"><summary class="pill" lang="' + esc(db.settings.lang) + '">' + esc(t("showSummary")) + "</summary>" + pts + "</details>";
     return html + "</div>";
   }
   function skeleton() {
@@ -468,7 +470,7 @@
 
   function streakChip() {
     var n = streak();
-    return '<span class="streak' + (n ? "" : " off") + '">' + icons.flame + esc(n ? t("streakDays", { n: n }) : t("streakStart")) + "</span>";
+    return '<span class="streak' + (n ? "" : " off") + '">' + esc(n ? t("streakDays", { n: n }) : t("streakStart")) + "</span>";
   }
 
   var logo = '<div class="w-brand"><svg width="22" height="22" viewBox="120 120 272 272" aria-hidden="true"><path d="M256 150c-40-22-92-28-136-20v228c44-8 96-2 136 20" fill="#E7F1EB" stroke="#2F6B4F" stroke-width="22" stroke-linejoin="round"/><path d="M256 150c40-22 92-28 136-20v228c-44-8-96-2-136 20" fill="#E7F1EB" stroke="#2F6B4F" stroke-width="22" stroke-linejoin="round"/><path d="M256 150v228" stroke="#2F6B4F" stroke-width="22" stroke-linecap="round"/></svg><span>Manna</span></div>';
@@ -498,8 +500,7 @@
   function renderToday() {
     renderTabs("today");
     var today = todayKey();
-    var head = '<header class="top"><div class="top-row">' + streakChip() +
-      '<a class="round" href="#/settings" aria-label="' + esc(t("settings")) + '">' + icons.gear + "</a></div>";
+    var head = '<header class="top"><div class="top-row"><span class="top-label">' + esc(longDate(new Date())) + "</span>" + streakChip() + "</div>";
 
     if (!db.bookmark) { renderWelcome(); return; }
 
@@ -514,7 +515,7 @@
       var needs = entries.map(function (e) { return loadChapters(e.chapters, tr); });
       Promise.all(needs).then(function () {
         if (!onRoute("#/today")) return;
-        var html = head + '<span class="top-label">' + esc(t("doneToday") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(rangeLabel(allChs)) + "</h1></header>";
+        var html = head + '<span class="eyebrow">' + esc(t("doneToday")) + '</span><h1 class="answer">' + esc(rangeLabel(allChs)) + "</h1></header>";
         html += '<div class="content"><div class="cols"><div class="col side">';
         entries.forEach(function (e, idx) {
           var m = e.mode || "together";
@@ -544,7 +545,7 @@
     var chs = upcoming(db.settings.perDay);
     loadChapters(chs, tr).then(function () {
       if (!onRoute("#/today")) return;
-      var html = head + '<span class="top-label">' + esc(t("today") + " · " + longDate(new Date())) + '</span><h1 class="answer">' + esc(rangeLabel(chs)) + "</h1></header>";
+      var html = head + '<span class="eyebrow">' + esc(t("today")) + '</span><h1 class="answer">' + esc(rangeLabel(chs)) + "</h1></header>";
       html += '<div class="content reading"><div class="cols"><div class="col side"><div class="section">' + esc(t("summary")) + "</div>";
       html += '<div id="summarySlot" data-key="' + esc(rangeKey(chs, mode, tr)) + '">' + summaryBlock(chs, mode, tr) + "</div>";
       html += '<div class="side-progress" id="sideProgress" role="region" aria-label="' + esc(t("listening")) + '"></div>';
@@ -705,13 +706,13 @@
   }
 
   function renderSettings() {
-    renderTabs(null);
+    renderTabs("settings");
     teardownReadingBar();
-    view.className = "screen no-tabs";
+    view.className = "screen";
     var s = db.settings;
     var key = getKey();
     var bm = db.bookmark && db.bookmark.c > 0 ? chapterLabel(db.bookmark.b, db.bookmark.c) : t("notSet");
-    var html = '<div class="bar narrow"><a class="round small" href="#/today" aria-label="' + esc(t("close")) + '">' + icons.x + '</a><h1 class="bar-title">' + esc(t("settings")) + "</h1><span></span></div>";
+    var html = '<header class="top narrow-top"><h1 class="page-title">' + esc(t("settings")) + "</h1></header>";
     html += '<div class="content narrow">';
 
     html += '<div class="section">' + esc(t("reading")) + '</div><div class="card">' +
@@ -1198,7 +1199,7 @@
   function depth(h) {
     h = h || "#/today";
     if (h.indexOf("#/design") === 0 || h.indexOf("#/pick") === 0) return 2;
-    if (h.indexOf("#/day/") === 0 || h.indexOf("#/settings") === 0) return 1;
+    if (h.indexOf("#/day/") === 0) return 1;
     return 0;
   }
   var curHash = location.hash || "#/today", slideTimer = 0;
