@@ -514,7 +514,7 @@
     loadChapters(chs, tr).then(function () {
       if (!onRoute("#/today") || onRoute("#/today/")) return;
       view.className = "screen today-screen";
-      var chip = done ? '<span class="done-chip">' + icons.check + esc(t("doneShort")) + "</span>" : "";
+      var chip = showDone ? '<span class="done-chip">' + icons.check + esc(t("doneShort")) + "</span>" : "";
       var html = '<div class="td"><div class="t-head"><span class="s-label">' + esc(longDate(new Date())) + "</span>" + chip + "</div>" +
         '<h1 class="answer">' + esc(rangeLabel(chs)) + "</h1>" +
         '<div id="summarySlot" data-key="' + esc(rangeKey(sumChs, mode, tr)) + '">' + summaryBlock(sumChs, mode, tr) + "</div>" +
