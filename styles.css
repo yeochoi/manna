@@ -666,7 +666,7 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
    ============================================================ */
 :root { --sage: #EDF2E8; }
 .s-label { margin: 0; font-size: 13px; line-height: 18px; font-weight: 400; color: var(--muted); }
-.today {
+.td {
   display: flex; flex-direction: column;
   min-height: calc(100dvh - env(safe-area-inset-bottom, 0px) - 88px);
   padding: calc(env(safe-area-inset-top, 0px) + 20px) var(--gutter) 24px;
@@ -674,8 +674,8 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
 }
 .t-head { height: 44px; display: flex; align-items: center; justify-content: space-between; }
 .done-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; line-height: 18px; color: var(--green-text); }
-.today .answer { margin: 16px 0 0; font-size: 34px; line-height: 42px; font-weight: 300; letter-spacing: -0.02em; }
-.today .summary { display: block; gap: 0; margin-top: 24px; }
+.td .answer { margin: 16px 0 0; font-size: 34px; line-height: 42px; font-weight: 300; letter-spacing: -0.02em; }
+.td .summary { display: block; gap: 0; margin-top: 24px; }
 .s-points { margin-top: 8px; }
 .s-points p { margin: 0 0 8px; font-size: 17px; line-height: 26px; color: var(--ink); }
 .s-points p:last-child { margin-bottom: 0; }
@@ -688,14 +688,19 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
 .t-gap { flex-grow: 1; min-height: 24px; }
 .t-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .t-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-.today .note-box, .today .card.pad { margin-top: 24px; }
+.td .note-box, .td .card.pad { margin-top: 24px; }
 .done-area .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
-.read-top { background: none; border: 0; padding-top: calc(env(safe-area-inset-top, 0px) + 20px); padding-bottom: 0; }
+.read-head { padding-top: calc(env(safe-area-inset-top, 0px) + 64px); }
+.read-head .answer { margin: 0; font-size: 34px; line-height: 42px; font-weight: 300; letter-spacing: -0.02em; }
+.read-wrap { max-width: 680px; margin: 0 auto; box-sizing: border-box; }
 .read-body { padding-top: 0; }
+.read-body .chapter:first-child .chapter-break { margin-top: 24px; }
+.chapter-break span { color: var(--ink); }
 @media (min-width: 900px) {
-  .today { min-height: calc(100vh - var(--topbar)); padding-top: 40px; }
-  .today .answer { font-size: 44px; line-height: 52px; }
-  .read-top { padding-top: 40px; }
+  .td { min-height: calc(100vh - var(--topbar)); padding-top: 40px; }
+  .td .answer { font-size: 44px; line-height: 52px; }
+  .read-head { padding-top: 40px; }
+  .read-head .answer { font-size: 44px; line-height: 52px; }
 }
 
 /* First open. Quiet, the name in green text only, one tap to start. */
@@ -710,3 +715,6 @@ a.jcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; 
 .w-pill:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .w-note { text-decoration: none; text-align: center; font-size: 13px; color: var(--muted); padding: 12px 0; }
 @media (min-width: 900px) { .welcome { flex-direction: column; align-items: stretch; padding: 64px var(--gutter); } .w-gap, .w-form { display: none; } }
+
+/* The summary sits the same way on Today and on a Journal day. */
+.summary { display: block; gap: 0; margin-top: 24px; }

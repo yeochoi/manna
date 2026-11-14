@@ -515,7 +515,7 @@
       if (!onRoute("#/today") || onRoute("#/today/")) return;
       view.className = "screen today-screen";
       var chip = done ? '<span class="done-chip">' + icons.check + esc(t("doneShort")) + "</span>" : "";
-      var html = '<div class="today"><div class="t-head"><span class="s-label">' + esc(longDate(new Date())) + "</span>" + chip + "</div>" +
+      var html = '<div class="td"><div class="t-head"><span class="s-label">' + esc(longDate(new Date())) + "</span>" + chip + "</div>" +
         '<h1 class="answer">' + esc(rangeLabel(chs)) + "</h1>" +
         '<div id="summarySlot" data-key="' + esc(rangeKey(sumChs, mode, tr)) + '">' + summaryBlock(sumChs, mode, tr) + "</div>" +
         '<div class="t-gap"></div><div class="t-actions">';
@@ -549,13 +549,13 @@
     loadChapters(st.chs, st.tr).then(function () {
       if (!onRoute("#/read")) return;
       view.className = "screen read-screen";
-      var html = '<div class="content"><header class="top read-top"><span class="s-label">' + esc(rangeLabel(st.chs)) + "</span></header>" +
+      var html = '<div class="content read-wrap"><header class="read-head"><h1 class="answer">' + esc(rangeLabel(st.chs)) + "</h1></header>" +
         '<div class="disc-body read-body">' + passageHTML(st.chs, st.tr) + "</div>" +
         '<div class="done-area">' + (st.again
           ? '<a class="btn secondary" href="#/today" style="display:flex;align-items:center;justify-content:center;text-decoration:none">' + esc(t("backToday")) + "</a>"
           : '<button class="btn" type="button" id="done">' + icons.check + esc(t("doneToday")) + "</button>") + "</div></div>";
       view.innerHTML = html;
-      setupReadingBar(st.chs, ".read-top");
+      setupReadingBar(st.chs, ".read-head");
       var d = document.getElementById("done");
       if (d) d.onclick = function () { markRead(st.chs, st.mode, st.tr); };
       if (st.listen) { st.listen = false; startListening(); }
@@ -671,7 +671,7 @@
       html += '<h1 class="answer" style="margin-top:20px">' + esc(rangeLabel(allChs)) + "</h1>";
       var n0 = 0, anyOpen = false;
       entries.forEach(function (e, i) {
-        html += '<div class="section">' + esc(entries.length > 1 ? rangeLabel(e.chapters) : t("summary")) + "</div>";
+        if (entries.length > 1) html += '<div class="section">' + esc(rangeLabel(e.chapters)) + "</div>";
         html += '<div class="slot" data-key="' + esc(rangeKey(e.chapters, e.mode || "together", tr)) + '">' + summaryBlock(e.chapters, e.mode || "together", tr) + '</div>';
         var open = ui.openPassage[key + i];
         html += disclosure("d" + i, t("passage", { tr: trName(tr) }), open, open ? passageHTML(e.chapters, tr, n0) : "");
