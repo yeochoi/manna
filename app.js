@@ -159,6 +159,7 @@
     pause: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></svg>',
     share: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>',
     gear: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+    check: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-8z"/></svg>',
     left: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
     right: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>',
@@ -280,25 +281,23 @@
       return '<li><span class="num">' + (i + 1) + "</span><span>" + esc(p) + "</span></li>";
     }).join("") + "</ol>";
   }
-  function summaryHTML(data, tr) {
+  // The summary as plain lines, then one card that pairs the key message with its verse.
+  // The card is exactly what gets shared: Manna's words in sans, God's words in serif and quotes.
+  function summaryHTML(data, tr, range) {
     var lang = trLang(tr);
-    // The key message comes first, in one plain sentence. Then the key verse. The easy summary waits one tap away.
-    var html = '<div class="summary" lang="' + lang + '">';
-    html += '<div class="message"><span class="message-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyMessage")) + '</span><span class="message-text">' + esc(data.message) + "</span></div>";
+    var pts = [];
+    if (data.chapters) data.chapters.forEach(function (c) { pts = pts.concat(c.points || []); });
+    else pts = data.points || [];
+    var html = '<div class="summary" lang="' + lang + '"><p class="s-label" lang="' + esc(db.settings.lang) + '">' + esc(t("summary")) + "</p>" +
+      '<div class="s-points">' + pts.map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("") + "</div>";
     var kv = verseLookup(data.key_verse, tr);
-    if (kv) {
-      var shareBtn = '<button class="round share-btn" type="button" data-share data-ref="' + esc(data.key_verse || "") + '" data-verse="' + esc(kv.text || "") +
-        '" data-msg="' + esc(data.message || "") + '" data-lang="' + esc(lang) + '" aria-label="' + esc(t("shareSummary")) + '">' + icons.share + "</button>";
-      html += '<div class="kv-group"><p class="verse-text">' + (kv.text ? esc(kv.text) : "") + '</p><div class="kv-row"><span class="kv-ref">' + esc(data.key_verse || kv.label) + "</span>" + shareBtn + "</div></div>";
+    html += '<div class="key-card"><p class="s-label" lang="' + esc(db.settings.lang) + '">' + esc(t("keyMessage")) + '</p><p class="key-msg">' + esc(data.message) + "</p>";
+    if (kv && kv.text) {
+      html += '<p class="key-verse">“' + esc(kv.text) + '”</p><div class="key-foot"><span class="s-label">' + esc(data.key_verse || kv.label) + "</span>" +
+        '<button class="icon-btn" type="button" data-share data-range="' + esc(range || "") + '" data-ref="' + esc(data.key_verse || "") + '" data-verse="' + esc(kv.text) +
+        '" data-msg="' + esc(data.message || "") + '" data-lang="' + esc(lang) + '" aria-label="' + esc(t("shareSummary")) + '">' + icons.share + "</button></div>";
     }
-    var pts = "";
-    if (data.chapters) {
-      data.chapters.forEach(function (c) { pts += '<div class="chapter-title">' + esc(c.title) + "</div>" + pointsHTML(c.points); });
-    } else {
-      pts += pointsHTML(data.points);
-    }
-    html += '<details class="easy"><summary class="pill" lang="' + esc(db.settings.lang) + '">' + esc(t("showSummary")) + "</summary>" + pts + "</details>";
-    return html + "</div>";
+    return html + "</div></div>";
   }
   function skeleton() {
     return '<div class="card pad"><div class="skeleton" role="status" aria-label="' + esc(t("summaryLoading")) + '"><span></span><span></span><span></span></div></div>';
@@ -306,7 +305,7 @@
   function summaryBlock(chs, mode, tr, opts) {
     var key = rangeKey(chs, mode, tr);
     var cached = db.summaries[key];
-    if (cached) return '<div class="card pad">' + summaryHTML(cached.data, tr) + "</div>";
+    if (cached) return summaryHTML(cached.data, tr, rangeLabel(chs));
     if (opts && opts.readOnly) return '<div class="note-box">' + esc(t("noSummarySaved")) + "</div>";
     var apiKey = getKey();
     if (inflight[key]) return skeleton();
@@ -464,7 +463,7 @@
   }
 
   // ---------- Screens ----------
-  var ui = { extra: false, month: null, selected: null, openPassage: {}, pickBook: null, resetOpen: false, readClosed: false };
+  var ui = { read: null, extra: false, month: null, selected: null, openPassage: {}, pickBook: null, resetOpen: false, readClosed: false };
   function onRoute(prefix) { var h = location.hash || "#/today"; return h.indexOf(prefix) === 0; }
   function entryTr(e) { return e.tr || "krv"; }
 
@@ -484,88 +483,82 @@
     teardownReadingBar();
     tabs.className = "tabs hide-all";
     view.className = "screen welcome-screen";
-    var feats = ["welcomeF1", "welcomeF2", "welcomeF3"].map(function (k, i) {
-      return '<li><span class="w-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="#2F6B4F" aria-hidden="true">' + featureIcons[i] + "</svg></span><span>" + esc(t(k)) + "</span></li>";
-    }).join("");
-    view.innerHTML = '<div class="welcome"><div class="w-intro">' + logo +
-      '<h1 class="w-title">' + esc(t("welcomeTitle")) + '</h1><ul class="w-feats">' + feats + "</ul></div>" +
-      '<div class="w-gap"></div>' +
-      '<div class="w-form"><span class="w-card-title">' + esc(t("welcomeCard")) + '</span><p class="w-card-body">' + esc(t("welcomeBody")) + "</p>" +
-      '<a class="btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/pick">' + esc(t("pickPlace")) + "</a>" +
-      '<button class="btn secondary" type="button" id="startGen">' + esc(t("startGenesis")) + "</button>" +
-      '<a class="w-note" href="#/settings">' + esc(t("welcomeNote")) + "</a></div></div>";
+    view.innerHTML = '<div class="welcome"><div class="w-name">Manna</div><div class="w-mid">' +
+      '<h1 class="w-title">' + esc(t("welcomeTitle")) + '</h1><p class="w-sub">' + esc(t("welcomeSub")) + "</p>" +
+      '<div class="w-pills"><button class="w-pill" type="button" id="startGen">' + esc(t("startGenesis")) + icons.right + "</button>" +
+      '<a class="w-pill" href="#/pick">' + esc(t("pickPlace")) + icons.right + "</a></div></div>" +
+      '<a class="w-note" href="#/settings">' + esc(t("welcomeNote")) + "</a></div>";
     document.getElementById("startGen").onclick = function () { db.bookmark = { b: 1, c: 0 }; save(); render(); };
   }
 
+  // Today. One layout before and after reading: the date, the reading, its summary, the key card, two buttons.
+  // Reading opens its own page. Listen opens the same page and starts reading aloud.
   function renderToday() {
     renderTabs("today");
-    var today = todayKey();
-    var head = '<header class="top"><div class="top-row"><span class="top-label">' + esc(longDate(new Date())) + "</span>" + streakChip() + "</div>";
-
+    teardownReadingBar();
     if (!db.bookmark) { renderWelcome(); return; }
-
+    var today = todayKey();
     var entries = db.log[today] || [];
-    var mode = db.settings.mode;
     var tr = db.settings.translation;
-
-    if (entries.length > 0 && !ui.extra) {
+    var done = entries.length > 0;
+    var showDone = done && !ui.extra;
+    var chs, mode;
+    if (showDone) {
       var last = entries[entries.length - 1];
-      var allChs = [];
-      entries.forEach(function (e) { allChs = allChs.concat(e.chapters); });
-      var needs = entries.map(function (e) { return loadChapters(e.chapters, tr); });
-      Promise.all(needs).then(function () {
-        if (!onRoute("#/today")) return;
-        var html = head + '<span class="eyebrow">' + esc(t("doneToday")) + '</span><h1 class="answer">' + esc(rangeLabel(allChs)) + "</h1></header>";
-        html += '<div class="content"><div class="cols"><div class="col side">';
-        entries.forEach(function (e, idx) {
-          var m = e.mode || "together";
-          var isLast = idx === entries.length - 1;
-          html += '<div class="section">' + esc(entries.length > 1 ? rangeLabel(e.chapters) : t("summary")) + "</div>";
-          html += '<div id="' + (isLast ? "summarySlot" : "s" + idx) + '" data-key="' + esc(rangeKey(e.chapters, m, tr)) + '">' + summaryBlock(e.chapters, m, tr) + "</div>";
-        });
-        html += '</div><div class="col main">';
-        var n0 = 0;
-        var inner = ui.openPassage.today ? entries.map(function (e) { var h = passageHTML(e.chapters, tr, n0); n0 += e.chapters.length; return h; }).join("") : "";
-        html += disclosure("today", t("passage", { tr: trName(tr) }), ui.openPassage.today, inner);
-        html += '<div class="done-area"><button class="btn secondary" type="button" id="readMore">' + esc(t("readMore", { n: db.settings.perDay })) + "</button></div></div></div></div>";
-        view.innerHTML = html;
-        placeListen();
-        // Listening needs its controls, so the bar comes back whenever the passage is open.
-        if (ui.openPassage.today) setupReadingBar(allChs, ".disc-row"); else teardownReadingBar();
-        entries.forEach(function (e) {
-          var sl = view.querySelector('[data-key="' + CSS.escape(rangeKey(e.chapters, e.mode || "together", tr)) + '"]');
-          if (sl) wireSummary(sl, e.chapters, e.mode || "together", tr);
-        });
-        view.querySelector('[data-disc="today"]').onclick = function () { ui.openPassage.today = !ui.openPassage.today; renderToday(); };
-        document.getElementById("readMore").onclick = function () { ui.extra = true; window.scrollTo(0, 0); renderToday(); };
-      }).catch(showLoadError);
-      return;
+      chs = []; entries.forEach(function (e) { chs = chs.concat(e.chapters); });
+      mode = last.mode || "together";
+      var sumChs = last.chapters;
+    } else {
+      chs = upcoming(db.settings.perDay); mode = db.settings.mode; sumChs = chs;
     }
-
-    var chs = upcoming(db.settings.perDay);
     loadChapters(chs, tr).then(function () {
-      if (!onRoute("#/today")) return;
-      var html = head + '<span class="eyebrow">' + esc(t("today")) + '</span><h1 class="answer">' + esc(rangeLabel(chs)) + "</h1></header>";
-      html += '<div class="content reading"><div class="cols"><div class="col side"><div class="section">' + esc(t("summary")) + "</div>";
-      html += '<div id="summarySlot" data-key="' + esc(rangeKey(chs, mode, tr)) + '">' + summaryBlock(chs, mode, tr) + "</div>";
-      html += '<div class="side-progress" id="sideProgress" role="region" aria-label="' + esc(t("listening")) + '"></div>';
-      html += '</div><div class="col main">' + disclosure("read", t("passage", { tr: trName(tr) }), !ui.readClosed, passageHTML(chs, tr), true);
-      html += '<div class="done-area"><button class="btn" type="button" id="done">' + esc(t("doneReading")) + "</button></div></div></div></div>";
+      if (!onRoute("#/today") || onRoute("#/today/")) return;
+      view.className = "screen today-screen";
+      var chip = done ? '<span class="done-chip">' + icons.check + esc(t("doneShort")) + "</span>" : "";
+      var html = '<div class="today"><div class="t-head"><span class="s-label">' + esc(longDate(new Date())) + "</span>" + chip + "</div>" +
+        '<h1 class="answer">' + esc(rangeLabel(chs)) + "</h1>" +
+        '<div id="summarySlot" data-key="' + esc(rangeKey(sumChs, mode, tr)) + '">' + summaryBlock(sumChs, mode, tr) + "</div>" +
+        '<div class="t-gap"></div><div class="t-actions">';
+      if (showDone) {
+        html += '<button class="btn secondary" type="button" id="readAgain">' + esc(t("readAgain")) + "</button>" +
+          '<button class="btn secondary" type="button" id="readMore">' + esc(t("nextN", { n: db.settings.perDay })) + "</button>";
+      } else {
+        html += '<button class="btn" type="button" id="readNow">' + esc(t("read")) + "</button>" +
+          (canListen() ? '<button class="btn secondary" type="button" id="listenNow">' + icons.speaker + esc(t("listen")) + "</button>" : "");
+      }
+      view.innerHTML = html + "</div></div>";
+      wireSummary(document.getElementById("summarySlot"), sumChs, mode, tr);
+      function go(listenToo) {
+        ui.read = { chs: chs, mode: mode, tr: tr, again: showDone, listen: !!listenToo };
+        // iPhones only let speech start from a tap. A silent word now lets the reading page speak after it opens.
+        if (listenToo && canListen()) { try { speechSynthesis.speak(new SpeechSynthesisUtterance(" ")); } catch (e) {} }
+        location.hash = "#/read";
+      }
+      var r = document.getElementById("readNow"); if (r) r.onclick = function () { go(false); };
+      var l = document.getElementById("listenNow"); if (l) l.onclick = function () { go(true); };
+      var a = document.getElementById("readAgain"); if (a) a.onclick = function () { go(false); };
+      var m = document.getElementById("readMore"); if (m) m.onclick = function () { ui.extra = true; window.scrollTo(0, 0); renderToday(); };
+    }).catch(showLoadError);
+  }
+
+  // The reading page. The passage, a thin chapter bar that pins while you scroll, and one button at the end.
+  function renderRead() {
+    renderTabs("today");
+    var st = ui.read;
+    if (!st) { location.replace("#/today"); return; }
+    loadChapters(st.chs, st.tr).then(function () {
+      if (!onRoute("#/read")) return;
+      view.className = "screen read-screen";
+      var html = '<div class="content"><header class="top read-top"><span class="s-label">' + esc(rangeLabel(st.chs)) + "</span></header>" +
+        '<div class="disc-body read-body">' + passageHTML(st.chs, st.tr) + "</div>" +
+        '<div class="done-area">' + (st.again
+          ? '<a class="btn secondary" href="#/today" style="display:flex;align-items:center;justify-content:center;text-decoration:none">' + esc(t("backToday")) + "</a>"
+          : '<button class="btn" type="button" id="done">' + icons.check + esc(t("doneToday")) + "</button>") + "</div></div>";
       view.innerHTML = html;
-      placeListen();
-      wireSummary(document.getElementById("summarySlot"), chs, mode, tr);
-      setupReadingBar(chs);
-      var rh = view.querySelector('[data-disc="read"]');
-      rh.onclick = function () {
-        ui.readClosed = !ui.readClosed;
-        rh.setAttribute("aria-expanded", String(!ui.readClosed));
-        document.getElementById("read-body").hidden = ui.readClosed;
-        var lbtn = rh.parentNode.querySelector(".listen-btn"); if (lbtn) lbtn.hidden = ui.readClosed;
-        placeListen();
-        rh.querySelector("svg").outerHTML = ui.readClosed ? icons.down : icons.up;
-        if (ui.readClosed) stopListening();
-      };
-      document.getElementById("done").onclick = function () { markRead(chs, mode, tr); };
+      setupReadingBar(st.chs, ".read-top");
+      var d = document.getElementById("done");
+      if (d) d.onclick = function () { markRead(st.chs, st.mode, st.tr); };
+      if (st.listen) { st.listen = false; startListening(); }
     }).catch(showLoadError);
   }
 
@@ -582,7 +575,7 @@
     ui.readClosed = false;
     stopListening();
     window.scrollTo(0, 0);
-    renderToday();
+    if (location.hash !== "#/today") location.hash = "#/today"; else renderToday();
     toast(t("doneToast"), t("undo"), function () {
       db.log[today].pop();
       if (!db.log[today].length) delete db.log[today];
@@ -964,122 +957,54 @@
     return lines;
   }
   function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-  // Drawn at 1080 wide. Sizes are the app's type scale times 1080 / 390.
+  // The shared picture is the key card: sage, the reading in small grey, the message in sans,
+  // the verse in serif and quotes, its reference, and Manna in green. Drawn at 1080 by 1350.
   function drawCard(c, d) {
-    var S = 1080 / 390, W = 1080, P = Math.round(26 * S), inner = W - P * 2, ko = d.lang === "ko";
+    var S = 1080 / 390, W = 1080, P = Math.round(32 * S), inner = W - P * 2, ko = d.lang === "ko";
     var sans = ko ? "'Noto Sans KR', Outfit, sans-serif" : "Outfit, 'Noto Sans KR', sans-serif";
-    var mctx = c.getContext("2d");
-    function font(size, weight) { return weight + " " + Math.round(size * S) + "px " + sans; }
-    mctx.font = font(17, 400); var verse = d.verse ? wrapLines(mctx, "“" + d.verse + "”", inner) : [];
-    var boxPad = Math.round(14 * S), boxInner = inner - boxPad * 2;
-    mctx.font = font(17, 400); var msg = wrapLines(mctx, d.msg, boxInner);
-    var LV = 17 * 1.7 * S, LM = 24 * S, LT = 26 * S, LS = 19 * S;
-    var boxH = boxPad * 2 + LS + 2 * S + msg.length * LM;
-    var H = Math.round(P + LT + 12 * S + verse.length * LV + 18 * S + boxH + 20 * S + LS + P);
+    var serif = ko ? "'Noto Serif KR', 'Noto Serif', serif" : "'Noto Serif', 'Noto Serif KR', serif";
+    function font(size, weight, fam) { return (weight || 400) + " " + Math.round(size * S) + "px " + (fam || sans); }
+    var m = c.getContext("2d");
+    m.font = font(17); var msg = wrapLines(m, d.msg, inner);
+    m.font = font(17, 400, serif); var verse = d.verse ? wrapLines(m, "“" + d.verse + "”", inner) : [];
+    var LS = 18 * S, LB = 26 * S, LV = 28 * S;
+    var block = (d.range ? LS + 8 * S : 0) + msg.length * LB + (verse.length ? 16 * S + verse.length * LV + 8 * S + LS : 0);
+    var H = Math.max(1350, Math.round(block + P * 2 + LS + 48 * S));
     c.width = W; c.height = H;
     var ctx = c.getContext("2d"); ctx.textBaseline = "top";
-    ctx.fillStyle = "#FBFAF7"; ctx.fillRect(0, 0, W, H);
-    var y = P;
-    ctx.fillStyle = "#275C43"; ctx.font = font(20, 600); ctx.fillText(d.ref, P, y + 3 * S); y += LT + 12 * S;
-    ctx.fillStyle = "#1C211E"; ctx.font = font(17, 400);
-    verse.forEach(function (l) { ctx.fillText(l, P, y + (LV - 17 * S) / 2); y += LV; });
-    y += 18 * S;
-    ctx.fillStyle = "#E8EFE3"; roundRect(ctx, P, y, inner, boxH, 12 * S); ctx.fill();
-    var by = y + boxPad;
-    ctx.fillStyle = "#275C43"; ctx.font = font(13, 400); ctx.fillText(d.label, P + boxPad, by + 3 * S); by += LS + 2 * S;
-    ctx.fillStyle = "#1C211E"; ctx.font = font(17, 400);
-    msg.forEach(function (l) { ctx.fillText(l, P + boxPad, by + (LM - 17 * S) / 2); by += LM; });
-    y += boxH + 20 * S;
-    // Footer. The Manna mark on the left, the address on the right, both quiet.
-    var mark = 18 * S;
-    ctx.save(); ctx.translate(P, y + (LS - mark) / 2); ctx.scale(mark / 272, mark / 272); ctx.translate(-120, -120);
-    ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.lineWidth = 22; ctx.strokeStyle = "#2F6B4F"; ctx.fillStyle = "#E8EFE3";
-    ["M256 150c-40-22-92-28-136-20v228c44-8 96-2 136 20", "M256 150c40-22 92-28 136-20v228c-44-8-96-2-136 20"].forEach(function (pd) { var p2 = new Path2D(pd); ctx.fill(p2); ctx.stroke(p2); });
-    ctx.stroke(new Path2D("M256 150v228")); ctx.restore();
-    // Center the words on the mark using the real ink height of the letters, so it lines up the same on every phone.
-    ctx.fillStyle = "#67706B"; ctx.font = font(13, 400); ctx.textBaseline = "alphabetic";
-    var mid = y + LS / 2, mm = ctx.measureText("Manna"), base = mid + (mm.actualBoundingBoxAscent - mm.actualBoundingBoxDescent) / 2;
-    ctx.fillText("Manna", P + mark + 6 * S, base);
-    var addr = SITE.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    ctx.textAlign = "right"; ctx.fillText(addr, W - P, base); ctx.textAlign = "left"; ctx.textBaseline = "top";
+    ctx.fillStyle = "#EDF2E8"; ctx.fillRect(0, 0, W, H);
+    var y = Math.round((H - LS - P - block) / 2);
+    if (d.range) { ctx.fillStyle = "#67706B"; ctx.font = font(13); ctx.fillText(d.range, P, y); y += LS + 8 * S; }
+    ctx.fillStyle = "#1C211E"; ctx.font = font(17);
+    msg.forEach(function (l) { ctx.fillText(l, P, y + (LB - 17 * S) / 2); y += LB; });
+    if (verse.length) {
+      y += 16 * S; ctx.font = font(17, 400, serif);
+      verse.forEach(function (l) { ctx.fillText(l, P, y + (LV - 17 * S) / 2); y += LV; });
+      y += 8 * S; ctx.fillStyle = "#67706B"; ctx.font = font(13); ctx.fillText(d.ref, P, y);
+    }
+    ctx.fillStyle = "#275C43"; ctx.font = font(13, 500); ctx.fillText("Manna", P, H - P - LS);
     return c;
   }
   function cardFile(d) {
     var url = drawCard(document.createElement("canvas"), d).toDataURL("image/png");
     var bin = atob(url.split(",")[1]), arr = new Uint8Array(bin.length);
     for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-    return new File([arr], "manna-" + d.ref.replace(/[^\w가-힣]+/g, "-") + ".png", { type: "image/png" });
+    return new File([arr], "manna-" + (d.ref || "card").replace(/[^\w가-힣]+/g, "-") + ".png", { type: "image/png" });
   }
   window.mannaCard = drawCard; // used by the design system page and tests
-  // Share opens a preview of the card first. The green Share button in it opens the phone's share sheet.
-  var shareSheet = null, shareFrom = null;
-  function closeShare() {
-    if (!shareSheet) return;
-    var el = shareSheet;
-    shareSheet = null;
-    el.classList.add("leaving");
-    setTimeout(function () { el.remove(); }, 300);
-    document.body.style.overflow = "";
-    if (shareFrom) shareFrom.focus();
+  // One tap. The phone's own share menu opens with the card. No preview step in between.
+  function shareCard(b) {
+    var d = { range: b.getAttribute("data-range"), ref: b.getAttribute("data-ref"), verse: b.getAttribute("data-verse"), msg: b.getAttribute("data-msg"), lang: b.getAttribute("data-lang") };
+    var text = d.msg + (d.verse ? "\n\n“" + d.verse + "”\n" + d.ref : "") + "\n\nManna " + SITE;
+    var file = null;
+    try { file = cardFile(d); } catch (err) {}
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file] }).catch(function () {}); return; }
+    if (navigator.share) { navigator.share({ text: text }).catch(function () {}); return; }
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { toast(t("shareCopied")); }, function () {});
   }
-  // Pull the grabber or the title down to close, like iOS.
-  function dragToClose(wrap) {
-    var sheet = wrap.querySelector(".share-sheet"), grab = wrap.querySelector(".share-grab");
-    var d = null;
-    grab.addEventListener("pointerdown", function (e) {
-      if (e.target.closest("button") || !window.matchMedia("(max-width: 899px)").matches) return;
-      d = { y: e.clientY, t: performance.now(), dy: 0 };
-      try { grab.setPointerCapture(e.pointerId); } catch (err) {}
-      sheet.classList.add("dragging");
-    });
-    grab.addEventListener("pointermove", function (e) {
-      if (!d) return;
-      var dy = e.clientY - d.y;
-      d.dy = dy > 0 ? dy : dy / 6;
-      sheet.style.transform = "translateY(" + d.dy + "px)";
-    });
-    function up() {
-      if (!d) return;
-      var fast = d.dy / Math.max(1, performance.now() - d.t) > 0.6, dy = d.dy;
-      d = null;
-      sheet.classList.remove("dragging");
-      if (dy > 120 || (fast && dy > 40)) closeShare();
-      else sheet.style.transform = "";
-    }
-    grab.addEventListener("pointerup", up);
-    grab.addEventListener("pointercancel", up);
-  }
-  function openShare(b) {
-    var d = { ref: b.getAttribute("data-ref"), verse: b.getAttribute("data-verse"), msg: b.getAttribute("data-msg"), lang: b.getAttribute("data-lang") };
-    // The card follows the language of the summary, not the app, so a Korean verse always gets a Korean label.
-    var L = window.STRINGS[d.lang] || window.STRINGS.en;
-    d.label = L.keyMessage;
-    var full = (d.verse ? "“" + d.verse + "”\n" + d.ref + "\n\n" : "") + d.label + "\n" + d.msg + "\n\nManna\n" + SITE;
-    var file = null, src = "";
-    try { file = cardFile(d); src = URL.createObjectURL(file); } catch (err) {}
-    shareFrom = b;
-    shareSheet = document.createElement("div");
-    shareSheet.className = "share-wrap";
-    shareSheet.innerHTML = '<div class="share-sheet" role="dialog" aria-modal="true" aria-labelledby="shareTitle">' +
-      '<div class="share-grab"><span class="grabber" aria-hidden="true"></span><div class="share-head"><button class="round" type="button" data-close aria-label="' + esc(t("close")) + '">' + icons.x + '</button><h2 class="share-title" id="shareTitle">' + esc(t("share")) + "</h2><span></span></div></div>" +
-      (src ? '<img class="share-img" src="' + src + '" alt="' + esc(d.ref + ". " + d.verse + " " + d.label + ". " + d.msg) + '">' : '<p class="share-text-preview">' + esc(full).replace(/\n/g, "<br>") + "</p>") +
-      '<button class="btn" type="button" data-send>' + esc(t("share")) + "</button></div>";
-    document.body.appendChild(shareSheet);
-    dragToClose(shareSheet);
-    document.body.style.overflow = "hidden";
-    shareSheet.querySelector("[data-close]").focus();
-    shareSheet.addEventListener("click", function (e) {
-      if (e.target === shareSheet || e.target.closest("[data-close]")) { closeShare(); return; }
-      if (!e.target.closest("[data-send]")) return;
-      if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file] }).then(closeShare, function () {}); return; }
-      if (navigator.share) { navigator.share({ text: full }).then(closeShare, function () {}); return; }
-      (navigator.clipboard ? navigator.clipboard.writeText(full) : Promise.reject()).then(function () { closeShare(); toast(t("shareCopied")); }, function () {});
-    });
-  }
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeShare(); });
   document.addEventListener("click", function (e) {
     var b = e.target.closest && e.target.closest("[data-share]");
-    if (b) openShare(b);
+    if (b) shareCard(b);
   });
 
   // ---------- Listening ----------
@@ -1185,6 +1110,7 @@
     view.className = "screen";
     var h = location.hash || "#/today";
     if (h.indexOf("#/record") === 0) return renderRecord();
+    if (h.indexOf("#/read") === 0) return renderRead();
     if (h.indexOf("#/day/") === 0) return renderDay(h.slice(6));
     if (h.indexOf("#/settings") === 0) return renderSettings();
     if (h.indexOf("#/design") === 0) return renderDesign();
@@ -1199,7 +1125,7 @@
   function depth(h) {
     h = h || "#/today";
     if (h.indexOf("#/design") === 0 || h.indexOf("#/pick") === 0) return 2;
-    if (h.indexOf("#/day/") === 0) return 1;
+    if (h.indexOf("#/day/") === 0 || h.indexOf("#/read") === 0) return 1;
     return 0;
   }
   var curHash = location.hash || "#/today", slideTimer = 0;
