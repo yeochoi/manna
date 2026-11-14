@@ -986,10 +986,11 @@
     return c;
   }
   function cardFile(d) {
-    var url = drawCard(document.createElement("canvas"), d).toDataURL("image/png");
+    // JPEG, not PNG. Some chat apps, WeChat among them, refuse PNG pictures that come from a web page.
+    var url = drawCard(document.createElement("canvas"), d).toDataURL("image/jpeg", 0.92);
     var bin = atob(url.split(",")[1]), arr = new Uint8Array(bin.length);
     for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-    return new File([arr], "manna-" + (d.ref || "card").replace(/[^\w가-힣]+/g, "-") + ".png", { type: "image/png" });
+    return new File([arr], "manna-card.jpg", { type: "image/jpeg", lastModified: Date.now() });
   }
   window.mannaCard = drawCard; // used by the design system page and tests
   // One tap. The phone's own share menu opens with the card. No preview step in between.
