@@ -72,16 +72,19 @@
     return p.system + "\n\n" + buildPrompt(sections, mode, lang);
   }
 
+  // Reads the JSON out of the answer. Code fences or a short note around it are fine.
   function parse(text) {
     var start = text.indexOf("{");
     var end = text.lastIndexOf("}");
-    if (start < 0 || end <= start) throw new Error("Unexpected response");
-    var data = JSON.parse(text.slice(start, end + 1));
-    if (!data.message || !(data.points || data.chapters)) throw new Error("Unexpected response");
+    if (start < 0 || end <= start) throw new Error("No summary in the answer");
+    var data;
+    try { data = JSON.parse(text.slice(start, end + 1)); } catch (e) { throw new Error("The answer was not complete"); }
+    if (data.key_message && !data.message) data.message = data.key_message;
+    if (!data.message || !(data.points || data.chapters)) throw new Error("The answer was missing parts");
     return data;
   }
 
-  function request(apiKey, model, sections, mode, lang) {
+  function ask(apiKey, model, sections, mode, lang) {
     var p = PROMPTS[lang] || PROMPTS.ko;
     return fetch(API_URL, {
       method: "POST",
@@ -93,7 +96,7 @@
       },
       body: JSON.stringify({
         model: model,
-        max_tokens: 1500,
+        max_tokens: 2000,
         system: p.system,
         messages: [{ role: "user", content: buildPrompt(sections, mode, lang) }]
       })
@@ -102,11 +105,22 @@
         if (!res.ok) {
           var msg = (json && json.error && json.error.message) || ("HTTP " + res.status);
           if (res.status === 401) msg = "API key?";
-          throw new Error(msg);
+          var err = new Error(msg); err.final = true; throw err;
         }
+        if (json.stop_reason === "refusal") throw new Error("The AI declined this passage");
+        if (json.stop_reason === "max_tokens") throw new Error("The answer was cut off");
         var text = (json.content || []).filter(function (c) { return c.type === "text"; }).map(function (c) { return c.text; }).join("");
         return parse(text);
       });
+    });
+  }
+
+  // An odd answer is often a one off, so it asks once more before showing an error.
+  // HTTP errors like a wrong key are shown right away.
+  function request(apiKey, model, sections, mode, lang) {
+    return ask(apiKey, model, sections, mode, lang).catch(function (e) {
+      if (e.final || e instanceof TypeError) throw e;
+      return ask(apiKey, model, sections, mode, lang);
     });
   }
 
